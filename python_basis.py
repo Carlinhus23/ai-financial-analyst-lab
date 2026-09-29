@@ -30,3 +30,35 @@ print(len(balances))
 # 5. Bucle
 for año in balances:
     print(año)
+
+empresas = ["Apple", "Microsoft", "Amazon", "Tesla"]
+for empresa in empresas:
+    print("Analizando", empresa)
+
+apple = {
+    "nombre": "Apple",
+    "ticker": "AAPL",
+    "pais": "Estados Unidos",
+    "sector": "Tecnología"
+}
+
+print(apple["nombre"])
+print(apple["ticker"])
+print(apple["pais"])
+print(apple["sector"])
+
+Apple = {
+    "nombre": "Apple",
+    "ticker": "AAPL",
+}
+Microsoft = {
+    "nombre": "Microsoft",
+    "ticker": "MSFT",
+}
+binomio = [
+    Apple,
+    Microsoft
+]
+
+for empresa in binomio:
+    print("Analizando", empresa["nombre"],"(",empresa["ticker"],")")
