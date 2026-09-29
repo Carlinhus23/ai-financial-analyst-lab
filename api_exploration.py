@@ -96,3 +96,54 @@ print(len(df) == 5)
 print(df["date"].is_unique)
 
 print(df["totalAssets"].notna().all())
+
+def validar_balance(df):
+    print("Número de filas correcto:", len(df) == 5)
+    print("Fechas únicas:", df["date"].is_unique)
+    print("Total Assets sin valores vacíos:", df["totalAssets"].notna().all())
+
+def validar_balance(df):
+    if len(df) == 5:
+        print("Número de filas: OK")
+    else:
+        print("ERROR: número de filas incorrecto")
+    if df["date"].is_unique:
+        print("Fechas únicas: OK")
+    else:
+        print("ERROR: hay fechas duplicadas")
+    if df["totalAssets"].notna().all():
+        print("Total Assets: OK")
+    else:
+        print("ERROR: hay valores vacíos en Total Assets")
+
+validar_balance(df)
+
+
+def validar_balance(df):
+
+    if len(df) != 5:
+        raise ValueError("El balance no contiene exactamente 5 años.")
+
+    if not df["date"].is_unique:
+        raise ValueError("Hay fechas duplicadas.")
+
+    if not df["totalAssets"].notna().all():
+        raise ValueError("Hay valores vacíos en Total Assets.")
+
+    deuda_correcta = (
+        df["netDebt"]
+        == df["totalDebt"] - df["cashAndCashEquivalents"]
+    ).all()
+
+    if not deuda_correcta:
+        raise ValueError("La deuda neta no coincide con el cálculo.")
+
+    return True
+
+
+try:
+    resultado = validar_balance(df)
+    print("Balance validado:", resultado)
+
+except ValueError as error:
+    print("Se ha producido un error:", error)
