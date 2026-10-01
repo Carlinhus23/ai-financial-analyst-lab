@@ -1,10 +1,17 @@
-import pandas as pd
+from src.data.fmp_client import get_balance_sheet
+from src.data.transformer import balance_sheet_a_dataframe
+from src.data.validator import validar_balance
+from src.database.duckdb_manager import guardar_balance_sheet
 
-datos = {
-    "empresa": ["Apple", "Microsoft", "Amazon", "Tesla"],
-    "beneficio": [100, 200, 150, 3000]
-}
 
-df = pd.DataFrame(datos)
+symbol = "AAPL"
 
-print(df)
+balance_sheets = get_balance_sheet(symbol, limit=5)
+
+df = balance_sheet_a_dataframe(balance_sheets)
+
+validar_balance(df)
+
+guardar_balance_sheet(df)
+
+print("Pipeline completado correctamente.")

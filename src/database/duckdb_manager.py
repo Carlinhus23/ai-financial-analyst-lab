@@ -11,6 +11,10 @@ def guardar_balance_sheet(
         CREATE OR REPLACE TABLE balance_sheet AS
         SELECT * FROM df
     """)
+
+    conexion.close()
+
+
 def obtener_balance_sheet(
     ruta_db="ai_financial_analyst.duckdb",
 ):
