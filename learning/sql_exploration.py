@@ -170,4 +170,22 @@ debt_levels = conexion.execute("""
 
 print(debt_levels)
 
+debt_levels_ordenado = conexion.execute("""
+    SELECT
+        symbol,
+        date,
+        total_debt,
+        total_assets,
+        ROUND(total_debt / total_assets, 2) AS debt_to_assets_ratio,
+        CASE
+             WHEN debt_to_assets_ratio > 0.5 THEN 'Alto'
+             WHEN debt_to_assets_ratio >= 0.3 THEN 'Medio'
+        ELSE 'Bajo'
+        END AS nivel_deuda
+    FROM balance_sheet
+    ORDER BY debt_to_assets_ratio ASC
+""").df()
+
+print(debt_levels_ordenado)
+
 conexion.close()    

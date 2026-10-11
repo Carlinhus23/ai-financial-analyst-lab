@@ -1,36 +1,47 @@
 import duckdb
 
+RUTA_DB = "ai_financial_analyst.duckdb"
 
-def guardar_balance_sheet(
-    df,
-    ruta_db="ai_financial_analyst.duckdb",
-):
-    conexion = duckdb.connect(ruta_db)
-
-    conexion.execute("""
-        CREATE OR REPLACE TABLE balance_sheet AS
-        SELECT * FROM df
-    """)
-
-    conexion.close()
+# El nombre de tabla se pega dentro del SQL; solo se aceptan estos para que
+# nunca entre texto arbitrario en una consulta.
+TABLAS_PERMITIDAS = {"balance_sheet", "income_statement"}
 
 
-def obtener_balance_sheet(
-    ruta_db="ai_financial_analyst.duckdb",
-):
-    conexion = duckdb.connect(ruta_db)
+def _comprobar_tabla(tabla):
+    if tabla not in TABLAS_PERMITIDAS:
+        raise ValueError(f"Tabla no permitida: {tabla}")
 
-    resultado = conexion.execute("""
-        SELECT
-            date,
-            symbol,
-            total_assets,
-            total_debt,
-            net_debt
-        FROM balance_sheet
-        ORDER BY date
-    """).df()
 
-    conexion.close()
+def guardar_estado(df, tabla, ruta_db=RUTA_DB):
+    # Acumula: sustituye solo las filas de las mismas (symbol, date) que trae
+    # df y conserva el resto (otras empresas u otros años).
+    _comprobar_tabla(tabla)
 
-    return resultado
+    with duckdb.connect(ruta_db) as conexion:
+        conexion.execute(
+            f"CREATE TABLE IF NOT EXISTS {tabla} AS SELECT * FROM df LIMIT 0"
+        )
+
+        conexion.execute("BEGIN TRANSACTION")
+        conexion.execute(f"""
+            DELETE FROM {tabla}
+            WHERE (symbol, date) IN (SELECT symbol, date FROM df)
+        """)
+        conexion.execute(f"INSERT INTO {tabla} BY NAME SELECT * FROM df")
+        conexion.execute("COMMIT")
+
+
+def obtener_estado(tabla, symbols=None, ruta_db=RUTA_DB):
+    _comprobar_tabla(tabla)
+
+    consulta = f"SELECT * FROM {tabla}"
+    parametros = []
+
+    if symbols is not None:
+        consulta += " WHERE symbol IN (SELECT UNNEST(?))"
+        parametros = [list(symbols)]
+
+    consulta += " ORDER BY symbol, date"
+
+    with duckdb.connect(ruta_db) as conexion:
+        return conexion.execute(consulta, parametros).df()

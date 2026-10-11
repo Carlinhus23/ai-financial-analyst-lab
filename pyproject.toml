@@ -1,0 +1,15 @@
+[tool.pytest.ini_options]
+# Solo tests/: learning/ tiene scripts *_test.py que llaman a la API real.
+testpaths = ["tests"]
+# Permite "from src..." al ejecutar "pytest" a secas desde la raíz.
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 88
+# learning/ son apuntes de aprendizaje: no se revisan.
+extend-exclude = ["learning"]
+
+[tool.ruff.lint]
+# E/W: estilo PEP 8 · F: errores (imports sin usar, nombres sin definir)
+# I: orden de imports · B: errores típicos · UP: sintaxis moderna de Python
+select = ["E", "W", "F", "I", "B", "UP"]

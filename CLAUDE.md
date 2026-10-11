@@ -1,0 +1,66 @@
+# AI Financial Analyst (TFG)
+
+Analista financiero asistido por IA. Recupera estados financieros (Financial Modeling Prep), los limpia y valida, los guarda, calcula ratios con código determinista y, más adelante, un LLM interpreta métricas ya calculadas. Es el TFG de Carlos (Finanzas + RRLL y RRHH, Universidad de Sevilla). Idioma de trabajo: español.
+
+## Principio de diseño (no negociable)
+El LLM nunca calcula cifras ni ratios. Las fórmulas viven en Python/pandas, con tests. El LLM solo explica métricas ya calculadas y no inventa números.
+
+## Arquitectura
+FMP API -> `src/data/fmp_client.py` -> `transformer.py` (pandas, snake_case) -> `validator.py` -> persistencia (`src/database/duckdb_manager.py`) -> `src/financial/ratios.py` -> (futuro) capa LLM -> (futuro) interfaz Django.
+
+Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo llama a `src/`. Así el motor se prueba sin web y la web es sustituible.
+
+## Cómo enseñar a Carlos (importante)
+- Carlos está aprendiendo programación construyendo este proyecto real. Nada de ejercicios aislados.
+- Primero haz el cambio real. Después explícalo ligado a ese cambio: qué problema resuelve, dónde encaja en la arquitectura, y cómo comprobarlo. Un concepto nuevo = 1-3 frases.
+- No expliques línea a línea. No re-expliques lo que ya conoce: variables, funciones, imports, if/raise ValueError, list comprehensions, DataFrame, columnas, df.copy(), assert, SELECT/WHERE/GROUP BY, conexión DuckDB, .env y flujo git pull/add/commit/push.
+- Si pregunta "por qué" o "cómo funciona", entonces sí profundiza.
+- Tono cercano y profesional, sin paternalismo. Avanza en pasos pequeños: pocos archivos y conceptos por sesión.
+- Distingue siempre lo confirmado (ejecutado y visto) de lo propuesto. No des por hecho un paso que no se ha probado.
+
+## Cómo trabajar
+- Antes de cambios grandes (nueva dependencia, mover archivos, refactor), explica el plan en pocas líneas y espera el visto bueno.
+- Tras cambiar código, ejecuta las pruebas y enseña el resultado real. Si falla, depura con el mensaje completo, no con suposiciones.
+- Commits solo cuando Carlos lo pida. Mensajes en inglés, imperativo y concretos (ej.: `Add debt-to-assets ratio`).
+- Carlos trabaja en dos ordenadores Windows: empezar con `.\inicio.ps1` (pull + deps + tests), terminar con `.\fin.ps1 "mensaje"` (tests + ruff + commit + push; no sube si algo falla). Ejecutar `fin.ps1` es la forma en que Carlos pide el commit.
+
+## Seguridad
+- Nunca leas, imprimas ni pidas la clave API. `.env` está en `.gitignore` y no se sube. Mantén un `.env.example` solo con nombres de variables.
+
+## Comandos conocidos
+- Pipeline completo: `python main.py` (desde la raíz). Hace 6 llamadas a FMP (2 por empresa).
+- Tests: `pytest` (config en `pyproject.toml`: solo recoge `tests/`, porque `learning/` tiene scripts `*_test.py` que llaman a la API real). Ningún test llama a FMP.
+- Linter: `ruff check .` (y `--fix`), formato: `ruff format .`. Config en `pyproject.toml`; excluye `learning/`.
+- Instalar dependencias: `python -m pip install -r requirements.txt`.
+- Ojo (Windows PowerShell 5.1): no reescribir archivos UTF-8 con `Get-Content`/`Set-Content`, corrompe las tildes. Usar las herramientas de edición o Python.
+
+## Estado (revisado el 11-10-2026 ejecutando) — CHECKPOINT 1
+- Confirmado: `python main.py` funciona de punta a punta para AAPL, MSFT y KO (5 años cada una): API -> DataFrame -> trazabilidad -> validación -> DuckDB (acumulando) -> lectura -> unión balance+resultados -> 10 ratios.
+- Confirmado: `pytest` pasa 45/45 y `ruff check .` limpio.
+- Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
+- `fmp_client.py`: `get_balance_sheet`, `get_income_statement` (comparten `_get_estado_financiero`).
+- `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`, `unir_estados` (merge por symbol+date, one_to_one).
+- `validator.py`: `validar_balance`, `validar_cuenta_resultados` (comparten `_validar_comun`).
+- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`.
+- Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE. ROA/ROE con balance de cierre (no media).
+- Política de ratios: denominador 0 o nulo -> NaN (`_dividir`). Con patrimonio <= 0 también NaN (`_dividir_si_positivo`, para deuda/patrimonio y ROE).
+- FMP da `interest_expense = 0` para AAPL: no fiarse de ese campo (por eso no hay cobertura de intereses).
+- `*.duckdb` en `.gitignore`: la base se regenera con `python main.py` y no se sube.
+- `docs/decisiones.md` se menciona en la hoja de ruta pero no existe.
+- Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
+
+## Siguiente paso
+1. Repaso guiado archivo por archivo con Carlos de todo lo hecho hasta el checkpoint 1 (orden sugerido: fmp_client -> transformer -> validator -> duckdb_manager -> ratios -> pipeline -> main -> tests).
+2. Después: flujos de caja (cash flow statement) o empezar Django (fase 2).
+
+## Riesgos conocidos a resolver
+- Conservar `symbol` y `date` en todo para no mezclar empresas o periodos.
+- No sacar conclusiones tipo "deuda alta/baja" con umbrales arbitrarios: depende del sector.
+
+## Hoja de ruta
+0. ~~Cimientos: pytest, `requirements.txt`/`pyproject.toml`, `.env.example`, README, linter.~~ Hecho.
+1. ~~Cerrar el núcleo: ratio de deuda/activos con tests, validaciones robustas, más ratios.~~ Hecho (checkpoint 1).
+2. Django: proyecto `config/` + app `web/`, modelos (Company, Statement/Period, Ratio), primera página con la tabla de Apple. Decidir aquí si la persistencia pasa al ORM de Django (ver `docs/decisiones.md`).
+3. Más empresas y estados (cuenta de resultados, flujos), comparativas.
+4. Capa LLM sobre métricas ya calculadas.
+5. Cierre TFG: documentación, tests, demo reproducible en local, despliegue opcional.
