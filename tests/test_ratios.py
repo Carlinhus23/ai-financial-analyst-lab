@@ -2,13 +2,16 @@ import pandas as pd
 import pytest
 
 from src.financial.ratios import (
+    calcular_calidad_beneficio,
     calcular_deuda_sobre_activos,
     calcular_deuda_sobre_patrimonio,
     calcular_liquidez_corriente,
+    calcular_margen_fcf,
     calcular_margenes,
     calcular_prueba_acida,
     calcular_ratio_caja,
     calcular_ratios_balance,
+    calcular_ratios_flujos_caja,
     calcular_ratios_rentabilidad,
     calcular_roa,
     calcular_roe,
@@ -220,3 +223,50 @@ def test_ratios_rentabilidad_anade_todos():
     for columna in ["margen_bruto", "margen_operativo", "margen_neto", "roa", "roe"]:
         assert columna in resultado.columns
     assert "roa" not in datos.columns
+
+
+def test_margen_fcf_resta_el_capex_negativo():
+    datos = pd.DataFrame(
+        {
+            "operating_cash_flow": [120, 50],
+            "capital_expenditure": [-20, -10],
+            "revenue": [400, 0],
+        }
+    )
+
+    resultado = calcular_margen_fcf(datos)
+
+    assert resultado["flujo_caja_libre"].tolist() == [100, 40]
+    assert resultado["margen_fcf"].iloc[0] == pytest.approx(0.25)
+    assert pd.isna(resultado["margen_fcf"].iloc[1])
+
+
+def test_calidad_beneficio_nan_si_beneficio_cero_o_negativo():
+    datos = pd.DataFrame(
+        {
+            "operating_cash_flow": [150, 150, 150],
+            "net_income": [100, 0, -50],
+        }
+    )
+
+    resultado = calcular_calidad_beneficio(datos)["calidad_beneficio"]
+
+    assert resultado.iloc[0] == pytest.approx(1.5)
+    assert resultado.iloc[1:].isna().all()
+
+
+def test_ratios_flujos_caja_anade_todos():
+    datos = pd.DataFrame(
+        {
+            "operating_cash_flow": [150],
+            "capital_expenditure": [-30],
+            "revenue": [600],
+            "net_income": [100],
+        }
+    )
+
+    resultado = calcular_ratios_flujos_caja(datos)
+
+    for columna in ["flujo_caja_libre", "margen_fcf", "calidad_beneficio"]:
+        assert columna in resultado.columns
+    assert "margen_fcf" not in datos.columns

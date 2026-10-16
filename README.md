@@ -31,7 +31,7 @@ scripts, ejecuta una vez: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 ## Uso
 
 ```powershell
-python main.py    # descarga AAPL, MSFT y KO (5 años) y muestra sus ratios
+python main.py    # descarga balance, resultados y flujos de AAPL, MSFT y KO (5 años) y muestra sus ratios
 pytest            # tests (no llaman a la API)
 ruff check .      # revisa el código
 ruff format .     # da formato al código
@@ -67,6 +67,9 @@ learning/                  scripts de aprendizaje; no forman parte del motor
 | Margen neto | `net_income / revenue` | `NaN` |
 | ROA | `net_income / total_assets` | `NaN` |
 | ROE | `net_income / total_stockholders_equity` | `NaN` (también si el patrimonio ≤ 0) |
+| Flujo de caja libre | `operating_cash_flow + capital_expenditure` (capex en negativo) | — |
+| Margen FCF | `flujo_caja_libre / revenue` | `NaN` |
+| Calidad del beneficio | `operating_cash_flow / net_income` | `NaN` (también si el beneficio ≤ 0) |
 
 ROA y ROE usan el balance de cierre del año, no la media del año
 (simplificación).

@@ -28,7 +28,8 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Nunca leas, imprimas ni pidas la clave API. `.env` está en `.gitignore` y no se sube. Mantén un `.env.example` solo con nombres de variables.
 
 ## Comandos conocidos
-- Pipeline completo: `python main.py` (desde la raíz). Hace 6 llamadas a FMP (2 por empresa).
+- Pipeline completo: `python main.py` (desde la raíz). Hace 9 llamadas a FMP (3 por empresa).
+- Python del proyecto: `.\.venv\Scripts\python.exe` (el `python` global no tiene las dependencias).
 - Tests: `pytest` (config en `pyproject.toml`: solo recoge `tests/`, porque `learning/` tiene scripts `*_test.py` que llaman a la API real). Ningún test llama a FMP.
 - Linter: `ruff check .` (y `--fix`), formato: `ruff format .`. Config en `pyproject.toml`; excluye `learning/`.
 - Instalar dependencias: `python -m pip install -r requirements.txt`.
@@ -36,13 +37,14 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 
 ## Estado (revisado el 11-10-2026 ejecutando) — CHECKPOINT 1
 - Confirmado: `python main.py` funciona de punta a punta para AAPL, MSFT y KO (5 años cada una): API -> DataFrame -> trazabilidad -> validación -> DuckDB (acumulando) -> lectura -> unión balance+resultados -> 10 ratios.
-- Confirmado: `pytest` pasa 45/45 y `ruff check .` limpio.
+- Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 53/53 y `ruff check .` limpio.
 - Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
-- `fmp_client.py`: `get_balance_sheet`, `get_income_statement` (comparten `_get_estado_financiero`).
+- `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement` (comparten `_get_estado_financiero`).
 - `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`, `unir_estados` (merge por symbol+date, one_to_one).
-- `validator.py`: `validar_balance`, `validar_cuenta_resultados` (comparten `_validar_comun`).
-- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`.
-- Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE. ROA/ROE con balance de cierre (no media).
+- `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja` (comparten `_validar_comun`; `_comprobar_cuadre` verifica deuda neta y FCF de FMP contra nuestro cálculo; el capex debe llegar en negativo).
+- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`.
+- Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE, flujo de caja libre (OCF + capex, calculado por nosotros), margen FCF, calidad del beneficio (OCF / beneficio neto; NaN si beneficio <= 0). ROA/ROE con balance de cierre (no media).
+- Orden de unión en `obtener_ratios`: balance -> resultados -> flujos. En columnas repetidas manda la primera tabla; el `inventory` de flujos es la variación, no el saldo (hay test que lo vigila).
 - Política de ratios: denominador 0 o nulo -> NaN (`_dividir`). Con patrimonio <= 0 también NaN (`_dividir_si_positivo`, para deuda/patrimonio y ROE).
 - FMP da `interest_expense = 0` para AAPL: no fiarse de ese campo (por eso no hay cobertura de intereses).
 - `*.duckdb` en `.gitignore`: la base se regenera con `python main.py` y no se sube.
@@ -50,8 +52,8 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
 
 ## Siguiente paso
-1. Repaso guiado archivo por archivo con Carlos de todo lo hecho hasta el checkpoint 1 (orden sugerido: fmp_client -> transformer -> validator -> duckdb_manager -> ratios -> pipeline -> main -> tests).
-2. Después: flujos de caja (cash flow statement) o empezar Django (fase 2).
+1. Repaso guiado: hechos fmp_client y transformer. El resto (validator -> duckdb_manager -> ratios -> pipeline -> main -> tests) lo estudia Carlos por su cuenta; explicar bloque a bloque solo si lo pide.
+2. Siguiente: empezar Django (fase 2).
 
 ## Riesgos conocidos a resolver
 - Conservar `symbol` y `date` en todo para no mezclar empresas o periodos.

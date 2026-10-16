@@ -101,6 +101,39 @@ def calcular_roe(df):
     return df_resultado
 
 
+# --- Flujos de caja ---
+
+
+def calcular_flujo_caja_libre(df):
+    # Lo calculamos nosotros en vez de usar free_cash_flow de FMP (el
+    # validador ya comprueba que coinciden). El capex llega en negativo.
+    df_resultado = df.copy()
+    df_resultado["flujo_caja_libre"] = (
+        df_resultado["operating_cash_flow"] + df_resultado["capital_expenditure"]
+    )
+    return df_resultado
+
+
+def calcular_margen_fcf(df):
+    df_resultado = calcular_flujo_caja_libre(df)
+    df_resultado["margen_fcf"] = _dividir(
+        df_resultado["flujo_caja_libre"],
+        df_resultado["revenue"],
+    )
+    return df_resultado
+
+
+def calcular_calidad_beneficio(df):
+    # Caja operativa por cada euro de beneficio. Con pérdidas el ratio cambia
+    # de signo y deja de ser interpretable, así que es NaN si el beneficio <= 0.
+    df_resultado = df.copy()
+    df_resultado["calidad_beneficio"] = _dividir_si_positivo(
+        df_resultado["operating_cash_flow"],
+        df_resultado["net_income"],
+    )
+    return df_resultado
+
+
 # --- Agrupadores ---
 
 
@@ -127,3 +160,8 @@ def calcular_ratios_balance(df):
 def calcular_ratios_rentabilidad(df):
     # Necesita balance y cuenta de resultados unidos (ver unir_estados).
     return _aplicar(df, [calcular_margenes, calcular_roa, calcular_roe])
+
+
+def calcular_ratios_flujos_caja(df):
+    # Necesita flujos de caja y cuenta de resultados unidos (usa revenue).
+    return _aplicar(df, [calcular_margen_fcf, calcular_calidad_beneficio])

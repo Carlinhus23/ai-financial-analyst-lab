@@ -43,3 +43,7 @@ def get_balance_sheet(symbol, limit=5):
 
 def get_income_statement(symbol, limit=5):
     return _get_estado_financiero("income-statement", symbol, limit)
+
+
+def get_cash_flow_statement(symbol, limit=5):
+    return _get_estado_financiero("cash-flow-statement", symbol, limit)

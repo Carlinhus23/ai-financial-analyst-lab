@@ -16,6 +16,14 @@ COLUMNAS_RESULTADOS = [
     "net_income",
 ]
 
+COLUMNAS_FLUJOS_CAJA = [
+    "symbol",
+    "date",
+    "operating_cash_flow",
+    "capital_expenditure",
+    "free_cash_flow",
+]
+
 
 def _validar_comun(df, columnas_obligatorias, periodos_esperados):
     # Comprobaciones que valen para cualquier estado financiero.
@@ -33,22 +41,32 @@ def _validar_comun(df, columnas_obligatorias, periodos_esperados):
         raise ValueError("Hay periodos duplicados para una misma empresa.")
 
 
+def _comprobar_cuadre(df, informado, esperado, nombre, tolerancia):
+    # Comprueba que una cifra que da la fuente coincide con nuestro cálculo.
+    # Tolerancia relativa para redondeos de la fuente; como mínimo 1 unidad
+    # monetaria para que un valor esperado de 0 no exija exactitud total.
+    diferencia = (informado - esperado).abs()
+    margen = (tolerancia * esperado.abs()).clip(lower=1)
+
+    no_cuadran = ~(diferencia <= margen)
+    if no_cuadran.any():
+        fechas = df.loc[no_cuadran, "date"].astype(str).tolist()
+        raise ValueError(f"{nombre} no coincide con el cálculo en: {fechas}")
+
+
 def validar_balance(df, periodos_esperados=None, tolerancia=1e-6):
     _validar_comun(df, COLUMNAS_BALANCE, periodos_esperados)
 
     if not df["total_assets"].notna().all():
         raise ValueError("Hay valores vacíos en total_assets.")
 
-    # Tolerancia relativa para redondeos de la fuente; como mínimo 1 unidad
-    # monetaria para que una deuda neta esperada de 0 no exija exactitud total.
-    esperado = df["total_debt"] - df["cash_and_cash_equivalents"]
-    diferencia = (df["net_debt"] - esperado).abs()
-    margen = (tolerancia * esperado.abs()).clip(lower=1)
-
-    no_cuadran = ~(diferencia <= margen)
-    if no_cuadran.any():
-        fechas = df.loc[no_cuadran, "date"].astype(str).tolist()
-        raise ValueError(f"La deuda neta no coincide con el cálculo en: {fechas}")
+    _comprobar_cuadre(
+        df,
+        informado=df["net_debt"],
+        esperado=df["total_debt"] - df["cash_and_cash_equivalents"],
+        nombre="La deuda neta",
+        tolerancia=tolerancia,
+    )
 
     return True
 
@@ -61,5 +79,27 @@ def validar_cuenta_resultados(df, periodos_esperados=None):
 
     if (df["gross_profit"] > df["revenue"]).any():
         raise ValueError("El beneficio bruto supera a los ingresos.")
+
+    return True
+
+
+def validar_flujos_caja(df, periodos_esperados=None, tolerancia=1e-6):
+    _validar_comun(df, COLUMNAS_FLUJOS_CAJA, periodos_esperados)
+
+    if not df["operating_cash_flow"].notna().all():
+        raise ValueError("Hay valores vacíos en operating_cash_flow.")
+
+    # FMP da el capex en negativo (salida de caja) y nuestro FCF lo suma.
+    # Si algún día llegara en positivo, el FCF saldría inflado sin avisar.
+    if (df["capital_expenditure"] > 0).any():
+        raise ValueError("capital_expenditure positivo: se esperaba en negativo.")
+
+    _comprobar_cuadre(
+        df,
+        informado=df["free_cash_flow"],
+        esperado=df["operating_cash_flow"] + df["capital_expenditure"],
+        nombre="El flujo de caja libre",
+        tolerancia=tolerancia,
+    )
 
     return True

@@ -4,7 +4,7 @@ RUTA_DB = "ai_financial_analyst.duckdb"
 
 # El nombre de tabla se pega dentro del SQL; solo se aceptan estos para que
 # nunca entre texto arbitrario en una consulta.
-TABLAS_PERMITIDAS = {"balance_sheet", "income_statement"}
+TABLAS_PERMITIDAS = {"balance_sheet", "income_statement", "cash_flow_statement"}
 
 
 def _comprobar_tabla(tabla):

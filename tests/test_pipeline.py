@@ -34,6 +34,22 @@ RESULTADOS_FMP = [
     }
 ]
 
+FLUJOS_FMP = [
+    {
+        "date": "2025-09-27",
+        "symbol": "AAPL",
+        "reportedCurrency": "USD",
+        "fiscalYear": "2025",
+        "netIncome": 120,
+        # En flujos, "inventory" es la variación del año, no el saldo: tiene
+        # un valor absurdo a propósito para detectar si se colara en los ratios.
+        "inventory": -999,
+        "operatingCashFlow": 180,
+        "capitalExpenditure": -30,
+        "freeCashFlow": 150,
+    }
+]
+
 
 @pytest.fixture
 def api_falsa(monkeypatch):
@@ -42,6 +58,9 @@ def api_falsa(monkeypatch):
     monkeypatch.setattr(pipeline, "get_balance_sheet", lambda s, limit: BALANCE_FMP)
     monkeypatch.setattr(
         pipeline, "get_income_statement", lambda s, limit: RESULTADOS_FMP
+    )
+    monkeypatch.setattr(
+        pipeline, "get_cash_flow_statement", lambda s, limit: FLUJOS_FMP
     )
 
 
@@ -59,6 +78,11 @@ def test_pipeline_completo_sin_api(api_falsa, tmp_path):
     assert fila["margen_neto"] == pytest.approx(0.24)
     assert fila["roa"] == pytest.approx(0.30)
     assert fila["roe"] == pytest.approx(1.50)
+    assert fila["flujo_caja_libre"] == 150
+    assert fila["margen_fcf"] == pytest.approx(0.30)
+    assert fila["calidad_beneficio"] == pytest.approx(1.50)
+    # La prueba ácida usa el inventario del balance (10), no el de flujos.
+    assert fila["prueba_acida"] == pytest.approx(1.40)
 
 
 def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):

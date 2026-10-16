@@ -1,7 +1,11 @@
 import pandas as pd
 import pytest
 
-from src.data.validator import validar_balance, validar_cuenta_resultados
+from src.data.validator import (
+    validar_balance,
+    validar_cuenta_resultados,
+    validar_flujos_caja,
+)
 
 
 def balance_valido(num_periodos=3):
@@ -143,3 +147,51 @@ def test_cuenta_resultados_falla_si_beneficio_bruto_supera_ingresos():
 def test_cuenta_resultados_comprueba_periodos_esperados():
     with pytest.raises(ValueError, match="Se esperaban 5 periodos y hay 2"):
         validar_cuenta_resultados(resultados_validos(), periodos_esperados=5)
+
+
+def flujos_validos():
+    return pd.DataFrame(
+        {
+            "symbol": ["AAPL", "AAPL"],
+            "date": pd.to_datetime(["2024-09-28", "2025-09-27"]),
+            "operating_cash_flow": [118, 111],
+            "capital_expenditure": [-9, -13],
+            "free_cash_flow": [109, 98],
+        }
+    )
+
+
+def test_flujos_caja_validos_pasan():
+    assert validar_flujos_caja(flujos_validos()) is True
+
+
+def test_flujos_caja_falla_si_faltan_columnas():
+    df = flujos_validos().drop(columns=["free_cash_flow"])
+
+    with pytest.raises(ValueError, match="free_cash_flow"):
+        validar_flujos_caja(df)
+
+
+def test_flujos_caja_falla_si_flujo_operativo_nulo():
+    df = flujos_validos().astype({"operating_cash_flow": float})
+    df.loc[0, "operating_cash_flow"] = None
+
+    with pytest.raises(ValueError, match="operating_cash_flow"):
+        validar_flujos_caja(df)
+
+
+def test_flujos_caja_falla_si_capex_positivo():
+    df = flujos_validos()
+    df["capital_expenditure"] = [9, 13]
+    df["free_cash_flow"] = [127, 124]  # cuadraría, pero el signo está mal
+
+    with pytest.raises(ValueError, match="capital_expenditure"):
+        validar_flujos_caja(df)
+
+
+def test_flujos_caja_falla_si_fcf_no_cuadra_e_indica_la_fecha():
+    df = flujos_validos()
+    df.loc[1, "free_cash_flow"] = 111  # FCF = OCF: como si ignorara el capex
+
+    with pytest.raises(ValueError, match="2025-09-27"):
+        validar_flujos_caja(df)

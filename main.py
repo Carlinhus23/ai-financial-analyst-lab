@@ -14,6 +14,8 @@ COLUMNAS_RATIOS = [
     "margen_neto",
     "roa",
     "roe",
+    "margen_fcf",
+    "calidad_beneficio",
 ]
 
 
