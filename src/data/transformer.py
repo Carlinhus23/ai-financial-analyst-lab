@@ -1,7 +1,5 @@
 import pandas as pd
 
-CLAVES = ["symbol", "date"]
-
 
 def convertir_a_snake_case(nombre):
     resultado = ""
@@ -37,18 +35,3 @@ def añadir_trazabilidad(df, fuente, fecha_extraccion=None):
     df_resultado["fuente"] = fuente
     df_resultado["fecha_extraccion_utc"] = fecha_extraccion
     return df_resultado
-
-
-def unir_estados(balance, resultados):
-    # Une balance y cuenta de resultados fila a fila por empresa y fecha.
-    # Las columnas repetidas (moneda, cik, fuente...) se toman del balance.
-    repetidas = [
-        c for c in resultados.columns if c in balance.columns and c not in CLAVES
-    ]
-
-    return balance.merge(
-        resultados.drop(columns=repetidas),
-        on=CLAVES,
-        how="inner",
-        validate="one_to_one",
-    )

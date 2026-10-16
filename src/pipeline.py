@@ -6,17 +6,17 @@ from src.data.fmp_client import (
     get_cash_flow_statement,
     get_income_statement,
 )
-from src.data.transformer import (
-    añadir_trazabilidad,
-    estado_a_dataframe,
-    unir_estados,
-)
+from src.data.transformer import añadir_trazabilidad, estado_a_dataframe
 from src.data.validator import (
     validar_balance,
     validar_cuenta_resultados,
     validar_flujos_caja,
 )
-from src.database.duckdb_manager import RUTA_DB, guardar_estado, obtener_estado
+from src.database.duckdb_manager import (
+    RUTA_DB,
+    guardar_estado,
+    obtener_datos_analisis,
+)
 from src.financial.ratios import (
     calcular_ratios_balance,
     calcular_ratios_flujos_caja,
@@ -48,15 +48,9 @@ def actualizar_empresa(symbol, num_periodos=5, ruta_db=RUTA_DB):
 
 def obtener_ratios(symbols=None, ruta_db=RUTA_DB):
     # Lee lo guardado y calcula todos los ratios. No llama a la API.
-    balance = obtener_estado("balance_sheet", symbols, ruta_db)
-    resultados = obtener_estado("income_statement", symbols, ruta_db)
-    flujos = obtener_estado("cash_flow_statement", symbols, ruta_db)
-
-    # El orden importa: en columnas repetidas manda la primera tabla. Los
-    # flujos van al final porque su "inventory" es la variación del año, no
-    # el saldo del balance que necesita la prueba ácida.
-    df = unir_estados(balance, resultados)
-    df = unir_estados(df, flujos)
+    # La unión de los tres estados la hace SQL (ver obtener_datos_analisis);
+    # las fórmulas se quedan en Python.
+    df = obtener_datos_analisis(symbols, ruta_db)
     df = calcular_ratios_balance(df)
     df = calcular_ratios_rentabilidad(df)
     df = calcular_ratios_flujos_caja(df)

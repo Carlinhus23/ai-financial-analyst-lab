@@ -43,9 +43,9 @@ ruff format .     # da formato al código
 main.py                    punto de entrada: elige empresas y muestra resultados
 src/pipeline.py            orquesta el motor: actualizar_empresa(), obtener_ratios()
 src/data/fmp_client.py     descarga de la API de FMP
-src/data/transformer.py    JSON -> DataFrame, trazabilidad, unión de estados
+src/data/transformer.py    JSON -> DataFrame y trazabilidad
 src/data/validator.py      comprobaciones antes de guardar
-src/database/duckdb_manager.py   guardar (acumulando) y leer en DuckDB
+src/database/duckdb_manager.py   SQL: guardar (acumulando), leer y unir los 3 estados
 src/financial/ratios.py    fórmulas de los ratios (sin LLM)
 tests/                     tests con pytest
 learning/                  scripts de aprendizaje; no forman parte del motor

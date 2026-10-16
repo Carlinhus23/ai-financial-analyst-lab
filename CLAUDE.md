@@ -37,14 +37,14 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 
 ## Estado (revisado el 11-10-2026 ejecutando) — CHECKPOINT 1
 - Confirmado: `python main.py` funciona de punta a punta para AAPL, MSFT y KO (5 años cada una): API -> DataFrame -> trazabilidad -> validación -> DuckDB (acumulando) -> lectura -> unión balance+resultados -> 10 ratios.
-- Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 53/53 y `ruff check .` limpio.
+- Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 54/54 y `ruff check .` limpio.
 - Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
 - `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement` (comparten `_get_estado_financiero`).
-- `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`, `unir_estados` (merge por symbol+date, one_to_one).
+- `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`. (`unir_estados` en pandas se eliminó: la unión ahora es SQL.)
 - `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja` (comparten `_validar_comun`; `_comprobar_cuadre` verifica deuda neta y FCF de FMP contra nuestro cálculo; el capex debe llegar en negativo).
-- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`.
+- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`. `obtener_datos_analisis(symbols)`: INNER JOIN de los 3 estados por symbol+date con columnas explícitas (`b.inventory` = saldo del balance) y error si salen periodos duplicados.
+- Reparto acordado con Carlos: SQL para los datos (guardar, filtrar, unir); Python para fórmulas, limpieza y validación.
 - Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE, flujo de caja libre (OCF + capex, calculado por nosotros), margen FCF, calidad del beneficio (OCF / beneficio neto; NaN si beneficio <= 0). ROA/ROE con balance de cierre (no media).
-- Orden de unión en `obtener_ratios`: balance -> resultados -> flujos. En columnas repetidas manda la primera tabla; el `inventory` de flujos es la variación, no el saldo (hay test que lo vigila).
 - Política de ratios: denominador 0 o nulo -> NaN (`_dividir`). Con patrimonio <= 0 también NaN (`_dividir_si_positivo`, para deuda/patrimonio y ROE).
 - FMP da `interest_expense = 0` para AAPL: no fiarse de ese campo (por eso no hay cobertura de intereses).
 - `*.duckdb` en `.gitignore`: la base se regenera con `python main.py` y no se sube.

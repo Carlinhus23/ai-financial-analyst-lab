@@ -158,7 +158,7 @@ def calcular_ratios_balance(df):
 
 
 def calcular_ratios_rentabilidad(df):
-    # Necesita balance y cuenta de resultados unidos (ver unir_estados).
+    # Necesita balance y cuenta de resultados unidos (ver obtener_datos_analisis).
     return _aplicar(df, [calcular_margenes, calcular_roa, calcular_roe])
 
 

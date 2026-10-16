@@ -45,3 +45,60 @@ def obtener_estado(tabla, symbols=None, ruta_db=RUTA_DB):
 
     with duckdb.connect(ruta_db) as conexion:
         return conexion.execute(consulta, parametros).df()
+
+
+# Une los tres estados por empresa y fecha y trae solo las columnas que usan
+# los ratios. Cada columna dice de qué tabla sale: así "inventory" es siempre
+# el saldo del balance (b) y no la variación del flujo de caja.
+# INNER JOIN: solo quedan los años que existen en los tres estados.
+CONSULTA_ANALISIS = """
+    SELECT
+        b.symbol,
+        b.date,
+        b.fiscal_year,
+        b.reported_currency,
+        b.fuente,
+        b.fecha_extraccion_utc,
+        -- Balance
+        b.total_assets,
+        b.total_debt,
+        b.total_stockholders_equity,
+        b.total_current_assets,
+        b.total_current_liabilities,
+        b.inventory,
+        b.cash_and_cash_equivalents,
+        -- Cuenta de resultados
+        r.revenue,
+        r.gross_profit,
+        r.operating_income,
+        r.net_income,
+        -- Flujos de caja
+        f.operating_cash_flow,
+        f.capital_expenditure
+    FROM balance_sheet AS b
+    INNER JOIN income_statement AS r
+        ON r.symbol = b.symbol AND r.date = b.date
+    INNER JOIN cash_flow_statement AS f
+        ON f.symbol = b.symbol AND f.date = b.date
+"""
+
+
+def obtener_datos_analisis(symbols=None, ruta_db=RUTA_DB):
+    consulta = CONSULTA_ANALISIS
+    parametros = []
+
+    if symbols is not None:
+        consulta += " WHERE b.symbol IN (SELECT UNNEST(?))"
+        parametros = [list(symbols)]
+
+    consulta += " ORDER BY b.symbol, b.date"
+
+    with duckdb.connect(ruta_db) as conexion:
+        df = conexion.execute(consulta, parametros).df()
+
+    # Si una tabla tuviera una (symbol, date) repetida, el JOIN multiplicaría
+    # filas sin avisar y los ratios saldrían duplicados.
+    if df.duplicated(subset=["symbol", "date"]).any():
+        raise ValueError("La unión de estados tiene periodos duplicados.")
+
+    return df
