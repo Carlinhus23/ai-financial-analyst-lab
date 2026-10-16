@@ -1,22 +1,10 @@
+from src.financial.ratios import NOMBRES_RATIOS
 from src.pipeline import actualizar_empresa, obtener_ratios
 
 EMPRESAS = ["AAPL", "MSFT", "KO"]
 NUM_PERIODOS = 5
 
-COLUMNAS_RATIOS = [
-    "deuda_sobre_activos",
-    "deuda_sobre_patrimonio",
-    "liquidez_corriente",
-    "prueba_acida",
-    "ratio_caja",
-    "margen_bruto",
-    "margen_operativo",
-    "margen_neto",
-    "roa",
-    "roe",
-    "margen_fcf",
-    "calidad_beneficio",
-]
+COLUMNAS_RATIOS = list(NOMBRES_RATIOS)
 
 
 def main():

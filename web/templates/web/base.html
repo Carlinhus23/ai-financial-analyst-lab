@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block titulo %}AI Financial Analyst{% endblock %}</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 0 auto; padding: 1.5rem 1rem; max-width: 60rem; color: #1f2933; }
+    header a { color: inherit; text-decoration: none; font-weight: 600; }
+    table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+    th, td { padding: 0.4rem 0.75rem; border-bottom: 1px solid #e4e7eb; }
+    th { text-align: left; }
+    td { text-align: right; }
+    thead th { text-align: right; border-bottom: 2px solid #9aa5b1; }
+    thead th:first-child { text-align: left; }
+    .tabla { overflow-x: auto; }
+    .nota { color: #616e7c; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header><a href="{% url 'inicio' %}">AI Financial Analyst</a></header>
+  <main>
+    {% block contenido %}{% endblock %}
+  </main>
+</body>
+</html>

@@ -37,7 +37,7 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 
 ## Estado (revisado el 11-10-2026 ejecutando) — CHECKPOINT 1
 - Confirmado: `python main.py` funciona de punta a punta para AAPL, MSFT y KO (5 años cada una): API -> DataFrame -> trazabilidad -> validación -> DuckDB (acumulando) -> lectura -> unión balance+resultados -> 10 ratios.
-- Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 54/54 y `ruff check .` limpio.
+- Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 59/59 y `ruff check .` limpio.
 - Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
 - `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement` (comparten `_get_estado_financiero`).
 - `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`. (`unir_estados` en pandas se eliminó: la unión ahora es SQL.)
@@ -48,12 +48,14 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Política de ratios: denominador 0 o nulo -> NaN (`_dividir`). Con patrimonio <= 0 también NaN (`_dividir_si_positivo`, para deuda/patrimonio y ROE).
 - FMP da `interest_expense = 0` para AAPL: no fiarse de ese campo (por eso no hay cobertura de intereses).
 - `*.duckdb` en `.gitignore`: la base se regenera con `python main.py` y no se sube.
-- `docs/decisiones.md` se menciona en la hoja de ruta pero no existe.
+- `docs/decisiones.md`: registro de decisiones (LLM no calcula; SQL datos / Python fórmulas; Django lee del motor, sin ORM para datos financieros).
+- Django 6.1.2 (fase 2 iniciada 16-10-2026): `config/` (settings lee `DJANGO_SECRET_KEY` de `.env`; `RUTA_DUCKDB`), app `web/` con `inicio` (`/`, lista empresas) y `empresa` (`/empresa/<symbol>/`, tabla de ratios). Las vistas solo llaman a `src/pipeline.py` (`listar_empresas`, `obtener_ratios`) y solo formatean (%, coma decimal). Nombres de ratios en `NOMBRES_RATIOS` (`ratios.py`), compartidos con `main.py`. Tests de la web en `tests/test_web.py` (pytest-django, fixture `settings`); datos falsos de FMP en `tests/conftest.py`.
+- Web local: `python manage.py runserver`. No ejecutar `main.py` con la web abierta (bloqueo de DuckDB).
 - Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
 
 ## Siguiente paso
 1. Repaso guiado: hechos fmp_client y transformer. El resto (validator -> duckdb_manager -> ratios -> pipeline -> main -> tests) lo estudia Carlos por su cuenta; explicar bloque a bloque solo si lo pide.
-2. Siguiente: empezar Django (fase 2).
+2. Django en marcha: ya hay página de inicio y tabla por empresa. Carlos la ve fea: lo primero de la próxima sesión es mejorar el aspecto (CSS propio en `web/static/` o una hoja ligera tipo Pico.css; sin herramientas de compilación). Después, ideas: comparar empresas en una tabla, mostrar los estados financieros (no solo ratios), botón para actualizar desde la web (cuidado con el bloqueo de DuckDB).
 
 ## Riesgos conocidos a resolver
 - Conservar `symbol` y `date` en todo para no mezclar empresas o periodos.

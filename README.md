@@ -15,6 +15,9 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 copy .env.example .env   # y pon tu clave de FMP en API_KEY
+# y en DJANGO_SECRET_KEY el resultado de:
+python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
+python manage.py migrate # crea la base interna de Django (db.sqlite3)
 ```
 
 ## Rutina de trabajo (dos ordenadores)
@@ -32,6 +35,7 @@ scripts, ejecuta una vez: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 
 ```powershell
 python main.py    # descarga balance, resultados y flujos de AAPL, MSFT y KO (5 años) y muestra sus ratios
+python manage.py runserver   # web local en http://127.0.0.1:8000/ (lee lo ya descargado)
 pytest            # tests (no llaman a la API)
 ruff check .      # revisa el código
 ruff format .     # da formato al código
@@ -47,11 +51,16 @@ src/data/transformer.py    JSON -> DataFrame y trazabilidad
 src/data/validator.py      comprobaciones antes de guardar
 src/database/duckdb_manager.py   SQL: guardar (acumulando), leer y unir los 3 estados
 src/financial/ratios.py    fórmulas de los ratios (sin LLM)
-tests/                     tests con pytest
+config/                    configuración de Django (settings, urls)
+web/                       app de Django: vistas y plantillas; solo llama a src/pipeline.py
+docs/decisiones.md         decisiones de diseño y sus motivos
+tests/                     tests con pytest (incluida la web, con pytest-django)
 learning/                  scripts de aprendizaje; no forman parte del motor
 ```
 
-`src/` es Python puro: no depende de ninguna interfaz web.
+`src/` es Python puro: no depende de ninguna interfaz web. No ejecutes
+`python main.py` con la web encendida: DuckDB no deja escribir mientras otro
+proceso tiene la base abierta.
 
 ## Ratios disponibles
 

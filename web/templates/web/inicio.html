@@ -1,0 +1,14 @@
+{% extends "web/base.html" %}
+
+{% block contenido %}
+  <h1>Empresas analizadas</h1>
+  {% if empresas %}
+    <ul>
+      {% for symbol in empresas %}
+        <li><a href="{% url 'empresa' symbol %}">{{ symbol }}</a></li>
+      {% endfor %}
+    </ul>
+  {% else %}
+    <p>Todavía no hay datos. Ejecuta <code>python main.py</code> para descargarlos.</p>
+  {% endif %}
+{% endblock %}

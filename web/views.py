@@ -1,0 +1,70 @@
+import math
+
+from django.conf import settings
+from django.http import Http404
+from django.shortcuts import render
+
+from src.financial.ratios import NOMBRES_RATIOS
+from src.pipeline import listar_empresas, obtener_ratios
+
+# Cómo se muestra cada ratio. Es solo presentación: las cifras llegan ya
+# calculadas desde src/ y aquí no se hace ninguna cuenta financiera.
+RATIOS_EN_PORCENTAJE = {
+    "deuda_sobre_activos",
+    "margen_bruto",
+    "margen_operativo",
+    "margen_neto",
+    "roa",
+    "roe",
+    "margen_fcf",
+}
+
+
+def _ruta_db():
+    return str(settings.RUTA_DUCKDB)
+
+
+def _empresas_disponibles():
+    # Sin archivo de DuckDB no hay datos (y así no se crea uno vacío).
+    if not settings.RUTA_DUCKDB.exists():
+        return []
+    return listar_empresas(_ruta_db())
+
+
+def _formatear(columna, valor):
+    if valor is None or math.isnan(valor):
+        return "—"
+    if columna in RATIOS_EN_PORCENTAJE:
+        return f"{valor * 100:.1f} %".replace(".", ",")
+    return f"{valor:.2f}".replace(".", ",")
+
+
+def inicio(request):
+    return render(request, "web/inicio.html", {"empresas": _empresas_disponibles()})
+
+
+def empresa(request, symbol):
+    symbol = symbol.upper()
+    if symbol not in _empresas_disponibles():
+        raise Http404(f"No hay datos guardados de {symbol}.")
+
+    ratios = obtener_ratios([symbol], _ruta_db())
+
+    # Misma forma que en la terminal: una fila por ratio, una columna por año.
+    filas = [
+        {
+            "nombre": nombre,
+            "valores": [_formatear(columna, valor) for valor in ratios[columna]],
+        }
+        for columna, nombre in NOMBRES_RATIOS.items()
+    ]
+
+    contexto = {
+        "symbol": symbol,
+        "moneda": ratios["reported_currency"].iloc[0],
+        "ejercicios": ratios["fiscal_year"].tolist(),
+        "filas": filas,
+        "fuente": ratios["fuente"].iloc[0],
+        "extraccion": ratios["fecha_extraccion_utc"].max(),
+    }
+    return render(request, "web/empresa.html", contexto)

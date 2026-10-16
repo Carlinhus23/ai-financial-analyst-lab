@@ -102,3 +102,19 @@ def obtener_datos_analisis(symbols=None, ruta_db=RUTA_DB):
         raise ValueError("La unión de estados tiene periodos duplicados.")
 
     return df
+
+
+def obtener_empresas(ruta_db=RUTA_DB):
+    # Empresas con los tres estados guardados (las que se pueden analizar).
+    consulta = f"""
+        SELECT DISTINCT symbol
+        FROM ({CONSULTA_ANALISIS})
+        ORDER BY symbol
+    """
+    with duckdb.connect(ruta_db) as conexion:
+        try:
+            filas = conexion.execute(consulta).fetchall()
+        except duckdb.CatalogException:
+            # Aún no existe alguna de las tablas: no hay empresas que analizar.
+            return []
+    return [fila[0] for fila in filas]

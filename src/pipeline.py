@@ -16,6 +16,7 @@ from src.database.duckdb_manager import (
     RUTA_DB,
     guardar_estado,
     obtener_datos_analisis,
+    obtener_empresas,
 )
 from src.financial.ratios import (
     calcular_ratios_balance,
@@ -55,3 +56,8 @@ def obtener_ratios(symbols=None, ruta_db=RUTA_DB):
     df = calcular_ratios_rentabilidad(df)
     df = calcular_ratios_flujos_caja(df)
     return df
+
+
+def listar_empresas(ruta_db=RUTA_DB):
+    # Empresas que ya tienen datos guardados. No llama a la API.
+    return obtener_empresas(ruta_db)

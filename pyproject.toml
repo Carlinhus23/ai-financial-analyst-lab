@@ -3,6 +3,8 @@
 testpaths = ["tests"]
 # Permite "from src..." al ejecutar "pytest" a secas desde la raíz.
 pythonpath = ["."]
+# pytest-django: configuración de Django para los tests de la web.
+DJANGO_SETTINGS_MODULE = "config.settings"
 
 [tool.ruff]
 line-length = 88

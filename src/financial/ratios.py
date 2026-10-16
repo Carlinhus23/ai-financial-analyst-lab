@@ -5,6 +5,24 @@
 # cierre del año, no la media entre inicio y fin: es una simplificación.
 
 
+# Columna de cada ratio y su nombre para mostrar (terminal y web), en el
+# orden en que se presentan.
+NOMBRES_RATIOS = {
+    "deuda_sobre_activos": "Deuda / activos",
+    "deuda_sobre_patrimonio": "Deuda / patrimonio",
+    "liquidez_corriente": "Liquidez corriente",
+    "prueba_acida": "Prueba ácida",
+    "ratio_caja": "Ratio de caja",
+    "margen_bruto": "Margen bruto",
+    "margen_operativo": "Margen operativo",
+    "margen_neto": "Margen neto",
+    "roa": "ROA",
+    "roe": "ROE",
+    "margen_fcf": "Margen FCF",
+    "calidad_beneficio": "Calidad del beneficio",
+}
+
+
 def _dividir(numerador, denominador):
     return numerador / denominador.where(denominador != 0)
 
