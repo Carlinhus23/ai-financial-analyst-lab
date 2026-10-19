@@ -54,8 +54,9 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
 
 ## Siguiente paso
-1. Repaso guiado: hechos fmp_client y transformer. El resto (validator -> duckdb_manager -> ratios -> pipeline -> main -> tests) lo estudia Carlos por su cuenta; explicar bloque a bloque solo si lo pide.
-2. Django en marcha: ya hay página de inicio y tabla por empresa. Carlos la ve fea: lo primero de la próxima sesión es mejorar el aspecto (CSS propio en `web/static/` o una hoja ligera tipo Pico.css; sin herramientas de compilación). Después, ideas: comparar empresas en una tabla, mostrar los estados financieros (no solo ratios), botón para actualizar desde la web (cuidado con el bloqueo de DuckDB).
+1. (19-10-2026) Carlos NO quiere avanzar hasta entender todo el código. Está estudiando con la "Guía de estudio del AI Financial Analyst" (Claude Doc, archivo por archivo y bloque a bloque): https://claude.ai/code/artifact/77b85f5f-732c-4545-bb96-3da49f64569d. Si cambia el código, actualizar la guía. Resolver sus dudas sobre ella antes de nada nuevo.
+2. Objetivo después: prototipo para enseñar al profesor del TFG con el MÍNIMO código nuevo posible (bonito y fácil, sin abrumar). Web ya con Pico.css (CDN, versión classless en `base.html`; sin internet sale sin estilo). Ideas solo si hacen falta para la demo: comparar empresas, mostrar estados financieros, botón de actualizar (cuidado con el bloqueo de DuckDB).
+- Cada ordenador necesita `DJANGO_SECRET_KEY` en su `.env` (si falta, pytest ni arranca). Tras un pull con estados nuevos, regenerar la base con `python main.py`.
 
 ## Riesgos conocidos a resolver
 - Conservar `symbol` y `date` en todo para no mezclar empresas o periodos.
