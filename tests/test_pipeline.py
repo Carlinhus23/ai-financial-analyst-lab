@@ -24,6 +24,17 @@ def test_pipeline_completo_sin_api(api_falsa, tmp_path):
     assert fila["prueba_acida"] == pytest.approx(1.40)
 
 
+def test_perfil_guardado_con_per(api_falsa, tmp_path):
+    ruta_db = str(tmp_path / "test.duckdb")
+
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+    perfil = pipeline.obtener_perfil("AAPL", ruta_db=ruta_db)
+
+    assert perfil["company_name"] == "Apple Inc."
+    assert perfil["sector"] == "Technology"
+    assert perfil["per"] == pytest.approx(20)  # 2400 / 120
+
+
 def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):
     ruta_db = str(tmp_path / "test.duckdb")
 

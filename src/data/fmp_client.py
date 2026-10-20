@@ -47,3 +47,9 @@ def get_income_statement(symbol, limit=5):
 
 def get_cash_flow_statement(symbol, limit=5):
     return _get_estado_financiero("cash-flow-statement", symbol, limit)
+
+
+def get_profile(symbol):
+    # Perfil y cotización actual (precio, capitalización, sector...). Es una
+    # sola fila: FMP ignora "period" y "limit" en este endpoint.
+    return _get_estado_financiero("profile", symbol, limit=1)

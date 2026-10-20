@@ -28,7 +28,7 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Nunca leas, imprimas ni pidas la clave API. `.env` está en `.gitignore` y no se sube. Mantén un `.env.example` solo con nombres de variables.
 
 ## Comandos conocidos
-- Pipeline completo: `python main.py` (desde la raíz). Hace 9 llamadas a FMP (3 por empresa).
+- Pipeline completo: `python main.py` (desde la raíz). Hace 12 llamadas a FMP (4 por empresa: 3 estados + perfil).
 - Python del proyecto: `.\.venv\Scripts\python.exe` (el `python` global no tiene las dependencias).
 - Tests: `pytest` (config en `pyproject.toml`: solo recoge `tests/`, porque `learning/` tiene scripts `*_test.py` que llaman a la API real). Ningún test llama a FMP.
 - Linter: `ruff check .` (y `--fix`), formato: `ruff format .`. Config en `pyproject.toml`; excluye `learning/`.
@@ -38,24 +38,26 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 ## Estado (revisado el 11-10-2026 ejecutando) — CHECKPOINT 1
 - Confirmado: `python main.py` funciona de punta a punta para AAPL, MSFT y KO (5 años cada una): API -> DataFrame -> trazabilidad -> validación -> DuckDB (acumulando) -> lectura -> unión balance+resultados -> 10 ratios.
 - Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 59/59 y `ruff check .` limpio.
+- Confirmado (20-10-2026): perfil de empresa + PER añadidos; `python main.py` OK con 12 llamadas; `pytest` 67/67; ruff limpio; las 4 páginas web dan 200.
 - Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
-- `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement` (comparten `_get_estado_financiero`).
-- `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad`. (`unir_estados` en pandas se eliminó: la unión ahora es SQL.)
-- `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja` (comparten `_validar_comun`; `_comprobar_cuadre` verifica deuda neta y FCF de FMP contra nuestro cálculo; el capex debe llegar en negativo).
-- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`. `obtener_datos_analisis(symbols)`: INNER JOIN de los 3 estados por symbol+date con columnas explícitas (`b.inventory` = saldo del balance) y error si salen periodos duplicados.
+- `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement`, `get_profile` (comparten `_get_estado_financiero`). Plan FMP de Carlos: `profile` y `quote` OK; `news/stock` y `sp500-constituent` dan 402 (de pago).
+- `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad` (solo convierte `date` si existe: el perfil no la trae). (`unir_estados` en pandas se eliminó: la unión ahora es SQL.)
+- `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja`, `validar_perfil` (1 fila, `market_cap` > 0) (comparten `_validar_comun`; `_comprobar_cuadre` verifica deuda neta y FCF de FMP contra nuestro cálculo; el capex debe llegar en negativo).
+- `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`, `company_profile` (date = día de descarga: una foto por día, acumula histórico). `obtener_datos_analisis(symbols)`: INNER JOIN de los 3 estados por symbol+date con columnas explícitas (`b.inventory` = saldo del balance) y error si salen periodos duplicados.
 - Reparto acordado con Carlos: SQL para los datos (guardar, filtrar, unir); Python para fórmulas, limpieza y validación.
-- Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE, flujo de caja libre (OCF + capex, calculado por nosotros), margen FCF, calidad del beneficio (OCF / beneficio neto; NaN si beneficio <= 0). ROA/ROE con balance de cierre (no media).
+- Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE, flujo de caja libre (OCF + capex, calculado por nosotros), margen FCF, calidad del beneficio (OCF / beneficio neto; NaN si beneficio <= 0). ROA/ROE con balance de cierre (no media). PER = capitalización actual / beneficio neto del último ejercicio (`calcular_per`, escalares; NaN si beneficio <= 0), lo da `pipeline.obtener_perfil`.
 - Política de ratios: denominador 0 o nulo -> NaN (`_dividir`). Con patrimonio <= 0 también NaN (`_dividir_si_positivo`, para deuda/patrimonio y ROE).
 - FMP da `interest_expense = 0` para AAPL: no fiarse de ese campo (por eso no hay cobertura de intereses).
 - `*.duckdb` en `.gitignore`: la base se regenera con `python main.py` y no se sube.
 - `docs/decisiones.md`: registro de decisiones (LLM no calcula; SQL datos / Python fórmulas; Django lee del motor, sin ORM para datos financieros).
-- Django 6.1.2 (fase 2 iniciada 16-10-2026): `config/` (settings lee `DJANGO_SECRET_KEY` de `.env`; `RUTA_DUCKDB`), app `web/` con `inicio` (`/`, lista empresas) y `empresa` (`/empresa/<symbol>/`, tabla de ratios). Las vistas solo llaman a `src/pipeline.py` (`listar_empresas`, `obtener_ratios`) y solo formatean (%, coma decimal). Nombres de ratios en `NOMBRES_RATIOS` (`ratios.py`), compartidos con `main.py`. Tests de la web en `tests/test_web.py` (pytest-django, fixture `settings`); datos falsos de FMP en `tests/conftest.py`.
+- Django 6.1.2 (fase 2 iniciada 16-10-2026): `config/` (settings lee `DJANGO_SECRET_KEY` de `.env`; `RUTA_DUCKDB`), app `web/` con `inicio` (`/`, lista empresas) y `empresa` (`/empresa/<symbol>/`, tabla de ratios). Las vistas solo llaman a `src/pipeline.py` (`listar_empresas`, `obtener_ratios`, `obtener_perfil`) y solo formatean (%, coma decimal). Nombres de ratios en `NOMBRES_RATIOS` (`ratios.py`), compartidos con `main.py`. Tests de la web en `tests/test_web.py` (pytest-django, fixture `settings`); datos falsos de FMP en `tests/conftest.py`.
 - Web local: `python manage.py runserver`. No ejecutar `main.py` con la web abierta (bloqueo de DuckDB).
 - Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
 
 ## Siguiente paso
 1. (19-10-2026) Carlos NO quiere avanzar hasta entender todo el código. Está estudiando con la "Guía de estudio del AI Financial Analyst" (Claude Doc, archivo por archivo y bloque a bloque): https://claude.ai/code/artifact/77b85f5f-732c-4545-bb96-3da49f64569d. Si cambia el código, actualizar la guía. Resolver sus dudas sobre ella antes de nada nuevo.
-2. Objetivo después: prototipo para enseñar al profesor del TFG con el MÍNIMO código nuevo posible (bonito y fácil, sin abrumar). Web ya con Pico.css (CDN, versión classless en `base.html`; sin internet sale sin estilo). Ideas solo si hacen falta para la demo: comparar empresas, mostrar estados financieros, botón de actualizar (cuidado con el bloqueo de DuckDB).
+2. (20-10-2026) Carlos eligió: primero un analista SIN IA completo, luego la IA (no tiene aún clave de Anthropic). Plan acordado (S&P 500 entero descartado: noticias/lista de pago y límite de llamadas): 1) ~~perfil + cotización + PER en la página de empresa, enlace a noticias de Yahoo~~ hecho; 2) más empresas (10-15 del S&P 500 de sectores distintos, lista a mano en `main.py`); 3) página de comparación; 4) después, IA.
+3. Objetivo general: prototipo para enseñar al profesor del TFG con el MÍNIMO código nuevo posible (bonito y fácil, sin abrumar). Web ya con Pico.css (CDN, versión classless en `base.html`; sin internet sale sin estilo). Ideas solo si hacen falta para la demo: comparar empresas, mostrar estados financieros, botón de actualizar (cuidado con el bloqueo de DuckDB).
 - Cada ordenador necesita `DJANGO_SECRET_KEY` en su `.env` (si falta, pytest ni arranca). Tras un pull con estados nuevos, regenerar la base con `python main.py`.
 
 ## Riesgos conocidos a resolver

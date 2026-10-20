@@ -1,3 +1,5 @@
+import math
+
 import pandas as pd
 import pytest
 
@@ -8,6 +10,7 @@ from src.financial.ratios import (
     calcular_liquidez_corriente,
     calcular_margen_fcf,
     calcular_margenes,
+    calcular_per,
     calcular_prueba_acida,
     calcular_ratio_caja,
     calcular_ratios_balance,
@@ -270,3 +273,13 @@ def test_ratios_flujos_caja_anade_todos():
     for columna in ["flujo_caja_libre", "margen_fcf", "calidad_beneficio"]:
         assert columna in resultado.columns
     assert "margen_fcf" not in datos.columns
+
+
+def test_per_con_valores_conocidos():
+    assert calcular_per(2400, 120) == pytest.approx(20)
+
+
+def test_per_nan_si_beneficio_cero_negativo_o_vacio():
+    assert math.isnan(calcular_per(2400, 0))
+    assert math.isnan(calcular_per(2400, -50))
+    assert math.isnan(calcular_per(2400, float("nan")))

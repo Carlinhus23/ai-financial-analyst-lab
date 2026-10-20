@@ -24,6 +24,19 @@ COLUMNAS_FLUJOS_CAJA = [
     "free_cash_flow",
 ]
 
+COLUMNAS_PERFIL = [
+    "symbol",
+    "date",
+    "company_name",
+    "sector",
+    "industry",
+    "price",
+    "change_percentage",
+    "market_cap",
+    "currency",
+    "image",
+]
+
 
 def _validar_comun(df, columnas_obligatorias, periodos_esperados):
     # Comprobaciones que valen para cualquier estado financiero.
@@ -101,5 +114,16 @@ def validar_flujos_caja(df, periodos_esperados=None, tolerancia=1e-6):
         nombre="El flujo de caja libre",
         tolerancia=tolerancia,
     )
+
+    return True
+
+
+def validar_perfil(df):
+    # Una sola fila: la foto del día de la empresa.
+    _validar_comun(df, COLUMNAS_PERFIL, periodos_esperados=1)
+
+    # La capitalización se usa para el PER: tiene que existir y ser positiva.
+    if not (df["market_cap"] > 0).all():
+        raise ValueError("market_cap vacío o no positivo.")
 
     return True

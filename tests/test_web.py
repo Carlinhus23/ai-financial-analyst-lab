@@ -41,6 +41,16 @@ def test_pagina_empresa_muestra_los_ratios(client, db_con_aapl):
     assert "Margen FCF" in texto
 
 
+def test_pagina_empresa_muestra_perfil_y_per(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "Apple Inc." in texto
+    assert "150,50 USD" in texto
+    assert "-0,15 %" in texto
+    assert "PER: <strong>20,00</strong>" in texto
+    assert "finance.yahoo.com/quote/AAPL/news" in texto
+
+
 def test_pagina_empresa_acepta_minusculas(client, db_con_aapl):
     assert client.get("/empresa/aapl/").status_code == 200
 

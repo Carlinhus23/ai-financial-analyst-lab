@@ -1,24 +1,28 @@
-# Orquesta el motor: une las piezas de src/ en dos operaciones de alto nivel.
-# main.py (y más adelante Django) solo llaman a estas funciones.
+# Orquesta el motor: une las piezas de src/ en operaciones de alto nivel.
+# main.py y Django solo llaman a estas funciones.
 
 from src.data.fmp_client import (
     get_balance_sheet,
     get_cash_flow_statement,
     get_income_statement,
+    get_profile,
 )
 from src.data.transformer import añadir_trazabilidad, estado_a_dataframe
 from src.data.validator import (
     validar_balance,
     validar_cuenta_resultados,
     validar_flujos_caja,
+    validar_perfil,
 )
 from src.database.duckdb_manager import (
     RUTA_DB,
     guardar_estado,
     obtener_datos_analisis,
     obtener_empresas,
+    obtener_estado,
 )
 from src.financial.ratios import (
+    calcular_per,
     calcular_ratios_balance,
     calcular_ratios_flujos_caja,
     calcular_ratios_rentabilidad,
@@ -28,7 +32,7 @@ FUENTE = "Financial Modeling Prep"
 
 
 def actualizar_empresa(symbol, num_periodos=5, ruta_db=RUTA_DB):
-    # Descarga, limpia, valida y guarda balance, resultados y flujos de caja.
+    # Descarga, limpia, valida y guarda los tres estados y el perfil.
     # Si algo no valida, se lanza el error antes de guardar nada.
     balance = estado_a_dataframe(get_balance_sheet(symbol, limit=num_periodos))
     balance = añadir_trazabilidad(balance, fuente=FUENTE)
@@ -42,9 +46,16 @@ def actualizar_empresa(symbol, num_periodos=5, ruta_db=RUTA_DB):
     flujos = añadir_trazabilidad(flujos, fuente=FUENTE)
     validar_flujos_caja(flujos, periodos_esperados=num_periodos)
 
+    perfil = estado_a_dataframe(get_profile(symbol))
+    perfil = añadir_trazabilidad(perfil, fuente=FUENTE)
+    # El perfil no trae fecha: se usa el día de descarga (una foto por día).
+    perfil["date"] = perfil["fecha_extraccion_utc"].dt.normalize()
+    validar_perfil(perfil)
+
     guardar_estado(balance, "balance_sheet", ruta_db)
     guardar_estado(resultados, "income_statement", ruta_db)
     guardar_estado(flujos, "cash_flow_statement", ruta_db)
+    guardar_estado(perfil, "company_profile", ruta_db)
 
 
 def obtener_ratios(symbols=None, ruta_db=RUTA_DB):
@@ -56,6 +67,19 @@ def obtener_ratios(symbols=None, ruta_db=RUTA_DB):
     df = calcular_ratios_rentabilidad(df)
     df = calcular_ratios_flujos_caja(df)
     return df
+
+
+def obtener_perfil(symbol, ruta_db=RUTA_DB):
+    # Último perfil guardado de la empresa más su PER. No llama a la API.
+    # Devuelve un diccionario, o None si no hay perfil guardado.
+    perfiles = obtener_estado("company_profile", [symbol], ruta_db)
+    if perfiles.empty:
+        return None
+
+    perfil = perfiles.iloc[-1].to_dict()  # viene ordenado por fecha: el último
+    datos = obtener_datos_analisis([symbol], ruta_db)
+    perfil["per"] = calcular_per(perfil["market_cap"], datos["net_income"].iloc[-1])
+    return perfil
 
 
 def listar_empresas(ruta_db=RUTA_DB):

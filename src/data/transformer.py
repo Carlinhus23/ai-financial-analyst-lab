@@ -18,7 +18,9 @@ def estado_a_dataframe(datos):
     # todos llegan como lista de diccionarios con camelCase y "date".
     df = pd.DataFrame(datos)
 
-    df["date"] = pd.to_datetime(df["date"])
+    # El perfil de empresa no trae "date"; los estados financieros sí.
+    if "date" in df.columns:
+        df["date"] = pd.to_datetime(df["date"])
 
     df.columns = [convertir_a_snake_case(columna) for columna in df.columns]
 

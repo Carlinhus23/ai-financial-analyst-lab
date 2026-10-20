@@ -5,7 +5,7 @@ from django.http import Http404
 from django.shortcuts import render
 
 from src.financial.ratios import NOMBRES_RATIOS
-from src.pipeline import listar_empresas, obtener_ratios
+from src.pipeline import listar_empresas, obtener_perfil, obtener_ratios
 
 # Cómo se muestra cada ratio. Es solo presentación: las cifras llegan ya
 # calculadas desde src/ y aquí no se hace ninguna cuenta financiera.
@@ -39,6 +39,23 @@ def _formatear(columna, valor):
     return f"{valor:.2f}".replace(".", ",")
 
 
+def _formatear_perfil(perfil):
+    # Solo presentación: el PER ya llega calculado desde src/.
+    millones = f"{perfil['market_cap'] / 1e6:,.0f}".replace(",", ".")
+    return {
+        "nombre": perfil["company_name"],
+        "sector": perfil["sector"],
+        "industria": perfil["industry"],
+        "logo": perfil["image"],
+        "moneda": perfil["currency"],
+        "precio": f"{perfil['price']:.2f}".replace(".", ","),
+        "variacion": f"{perfil['change_percentage']:+.2f} %".replace(".", ","),
+        "capitalizacion": f"{millones} M",
+        "per": _formatear("per", perfil["per"]),
+        "fecha": perfil["date"],
+    }
+
+
 def inicio(request):
     return render(request, "web/inicio.html", {"empresas": _empresas_disponibles()})
 
@@ -49,6 +66,7 @@ def empresa(request, symbol):
         raise Http404(f"No hay datos guardados de {symbol}.")
 
     ratios = obtener_ratios([symbol], _ruta_db())
+    perfil = obtener_perfil(symbol, _ruta_db())
 
     # Misma forma que en la terminal: una fila por ratio, una columna por año.
     filas = [
@@ -66,5 +84,6 @@ def empresa(request, symbol):
         "filas": filas,
         "fuente": ratios["fuente"].iloc[0],
         "extraccion": ratios["fecha_extraccion_utc"].max(),
+        "perfil": _formatear_perfil(perfil) if perfil else None,
     }
     return render(request, "web/empresa.html", contexto)

@@ -52,6 +52,21 @@ FLUJOS_FMP = [
     }
 ]
 
+# Sin "date", como el perfil real. PER esperado = 2400 / 120 = 20.
+PERFIL_FMP = [
+    {
+        "symbol": "AAPL",
+        "companyName": "Apple Inc.",
+        "sector": "Technology",
+        "industry": "Consumer Electronics",
+        "price": 150.5,
+        "changePercentage": -0.15,
+        "marketCap": 2400,
+        "currency": "USD",
+        "image": "https://example.com/aapl.png",
+    }
+]
+
 
 @pytest.fixture
 def api_falsa(monkeypatch):
@@ -64,3 +79,4 @@ def api_falsa(monkeypatch):
     monkeypatch.setattr(
         pipeline, "get_cash_flow_statement", lambda s, limit: FLUJOS_FMP
     )
+    monkeypatch.setattr(pipeline, "get_profile", lambda s: PERFIL_FMP)

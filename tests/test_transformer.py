@@ -39,3 +39,10 @@ def test_anadir_trazabilidad_sin_fecha_usa_ahora():
 
     despues = pd.Timestamp.now(tz="UTC").tz_localize(None)
     assert antes <= resultado["fecha_extraccion_utc"].iloc[0] <= despues
+
+
+def test_estado_a_dataframe_sin_date_no_falla():
+    # El perfil de FMP no trae "date".
+    df = estado_a_dataframe([{"symbol": "AAPL", "marketCap": 2400}])
+
+    assert list(df.columns) == ["symbol", "market_cap"]

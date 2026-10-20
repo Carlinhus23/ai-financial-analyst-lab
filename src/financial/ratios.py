@@ -152,6 +152,18 @@ def calcular_calidad_beneficio(df):
     return df_resultado
 
 
+# --- Valoración (mercado) ---
+
+
+def calcular_per(capitalizacion, beneficio_neto):
+    # PER = capitalización bursátil actual / beneficio neto del último
+    # ejercicio. Equivale a precio / BPA sin depender del número de acciones.
+    # Con beneficio <= 0 (o vacío) no es interpretable: NaN.
+    if not beneficio_neto > 0:
+        return float("nan")
+    return capitalizacion / beneficio_neto
+
+
 # --- Agrupadores ---
 
 

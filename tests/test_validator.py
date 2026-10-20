@@ -5,6 +5,7 @@ from src.data.validator import (
     validar_balance,
     validar_cuenta_resultados,
     validar_flujos_caja,
+    validar_perfil,
 )
 
 
@@ -195,3 +196,39 @@ def test_flujos_caja_falla_si_fcf_no_cuadra_e_indica_la_fecha():
 
     with pytest.raises(ValueError, match="2025-09-27"):
         validar_flujos_caja(df)
+
+
+def perfil_valido():
+    return pd.DataFrame(
+        {
+            "symbol": ["AAPL"],
+            "date": pd.to_datetime(["2026-10-20"]),
+            "company_name": ["Apple Inc."],
+            "sector": ["Technology"],
+            "industry": ["Consumer Electronics"],
+            "price": [150.5],
+            "change_percentage": [-0.15],
+            "market_cap": [2400],
+            "currency": ["USD"],
+            "image": ["https://example.com/aapl.png"],
+        }
+    )
+
+
+def test_perfil_valido_pasa():
+    assert validar_perfil(perfil_valido()) is True
+
+
+def test_perfil_falla_si_faltan_columnas():
+    df = perfil_valido().drop(columns=["sector"])
+
+    with pytest.raises(ValueError, match="sector"):
+        validar_perfil(df)
+
+
+def test_perfil_falla_si_capitalizacion_no_positiva():
+    df = perfil_valido()
+    df["market_cap"] = [0]
+
+    with pytest.raises(ValueError, match="market_cap"):
+        validar_perfil(df)
