@@ -21,13 +21,25 @@ def _get_estado_financiero(endpoint, symbol, limit):
         "apikey": api_key,
     }
 
-    response = requests.get(
-        f"{URL_BASE}/{endpoint}",
-        params=params,
-        timeout=30,
-    )
+    # Los errores de requests incluyen la URL completa, y la URL lleva la
+    # clave. Por eso se sustituyen por mensajes propios sin la URL ("from
+    # None" evita que el error original se imprima debajo).
+    try:
+        response = requests.get(
+            f"{URL_BASE}/{endpoint}",
+            params=params,
+            timeout=30,
+        )
+    except requests.RequestException as error:
+        raise RuntimeError(
+            f"No se pudo conectar con FMP ({type(error).__name__}) "
+            f"al pedir {endpoint} de {symbol}."
+        ) from None
 
-    response.raise_for_status()
+    if not response.ok:
+        raise RuntimeError(
+            f"FMP respondió {response.status_code} al pedir {endpoint} de {symbol}."
+        )
 
     datos = response.json()
 
