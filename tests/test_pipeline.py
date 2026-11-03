@@ -1,3 +1,4 @@
+import conftest
 import pytest
 
 from src import pipeline
@@ -47,6 +48,41 @@ def test_comparacion_una_fila_por_empresa_con_sector_y_per(api_falsa, tmp_path):
     assert filas[0]["sector"] == "Technology"
     assert filas[0]["per"] == pytest.approx(20)
     assert filas[0]["deuda_sobre_activos"] == pytest.approx(0.25)
+
+
+def test_comparacion_sin_sector_no_falla(api_falsa, monkeypatch, tmp_path):
+    # Yahoo puede no dar el sector (None): no debe romper la ordenación.
+    sin_sector = [conftest.PERFIL_FALSO[0] | {"sector": None}]
+    monkeypatch.setattr(pipeline, "get_profile", lambda s: sin_sector)
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+
+    filas = pipeline.obtener_comparacion(ruta_db=ruta_db)
+
+    assert filas[0]["sector"] == "—"
+    assert filas[0]["per"] == pytest.approx(20)
+
+
+def test_ficha_empresa_lleva_las_cifras_como_en_la_web(api_falsa, tmp_path):
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+
+    ficha = pipeline.ficha_empresa("AAPL", ruta_db=ruta_db)
+
+    assert "Empresa: AAPL (Apple Inc.). Sector: Technology. PER: 20,00." in ficha
+    assert "Deuda / activos: 2025: 25,0 %" in ficha
+    assert "Liquidez corriente: 2025: 1,50" in ficha
+
+
+def test_explicar_empresa_solo_envia_la_ficha(api_falsa, monkeypatch, tmp_path):
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+    recibido = []
+    monkeypatch.setattr(pipeline, "explicar", lambda ficha: recibido.append(ficha))
+
+    pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+
+    assert recibido == [pipeline.ficha_empresa("AAPL", ruta_db=ruta_db)]
 
 
 def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):

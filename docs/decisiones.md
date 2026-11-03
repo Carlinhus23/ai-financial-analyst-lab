@@ -91,3 +91,34 @@ construyen:
 
 **Alternativas descartadas:** yfinance para todo (datos ya estandarizados, pero
 no oficiales y solo 4 años) y seguir con FMP (límites del plan gratuito).
+
+## 5. Capa de IA con la API gratuita de Gemini (03-11-2026)
+
+**Decisión:** el LLM es Gemini, con el plan gratuito de su API
+(`src/llm/explicador.py`). Recibe solo la "ficha" de la empresa
+(`pipeline.ficha_empresa`): sus ratios ya calculados, escritos con el mismo
+formato que la web (`src/formato.py`). Se pide desde la web con el botón
+"Explicar con IA" (no al cargar la página).
+
+**Motivo:**
+- Gratis. La suscripción Google AI Pro de estudiante no incluye la API, pero la
+  API tiene plan gratuito para los modelos Flash.
+- Funciona en cualquier ordenador con internet (un modelo local con Ollama
+  exigía un ordenador potente).
+- Cumple la decisión 1: el LLM no recibe datos en bruto ni calcula; solo
+  explica cifras que ya se ven en la web.
+
+**Comprobado (03-11-2026):** en las explicaciones de AAPL, XOM y KO, todos los
+números que escribe el LLM (entre 21 y 36 por explicación) están en la ficha:
+no inventó ninguno.
+
+**Límites conocidos:**
+- En el plan gratuito, Google usa el contenido enviado para mejorar sus
+  productos. Solo se envían ratios públicos de empresas cotizadas.
+- Los modelos se saturan a menudo (error 503). Se prueban por orden
+  (`MODELOS`: Flash-Lite primero, que responde en 2-3 s) y cada uno espera como
+  mucho 20 s. Si todos fallan, la web lo dice y sigue funcionando.
+- La explicación puede interpretar mal una cifra: la web lo avisa.
+
+**Alternativas descartadas:** Claude (API de pago), un modelo local con Ollama
+(el otro ordenador de Carlos no puede con él).

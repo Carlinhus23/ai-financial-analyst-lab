@@ -1,6 +1,7 @@
 import pytest
 
 from src import pipeline
+from web import views
 
 
 @pytest.fixture
@@ -96,6 +97,44 @@ def test_datos_que_faltan_en_la_fuente_salen_como_raya(
         respuesta = client.get(direccion)
         assert respuesta.status_code == 200
         assert "—" in respuesta.text
+
+
+def test_empresa_muestra_el_boton_de_ia_sin_llamar_a_gemini(
+    client, db_con_aapl, monkeypatch
+):
+    def no_llamar(*args):
+        raise AssertionError("No se debe llamar a la IA sin pulsar el botón")
+
+    monkeypatch.setattr(views, "explicar_empresa", no_llamar)
+
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "Explicar con IA" in texto
+
+
+def test_al_pulsar_el_boton_muestra_la_explicacion(client, db_con_aapl, monkeypatch):
+    monkeypatch.setattr(
+        views, "explicar_empresa", lambda s, r: ("La deuda es baja.", "gemini-x")
+    )
+
+    texto = client.get("/empresa/AAPL/?explicar=1").text
+
+    assert "Explicación de la IA" in texto
+    assert "La deuda es baja." in texto
+    assert "gemini-x" in texto
+
+
+def test_si_falla_la_ia_la_pagina_sigue_funcionando(client, db_con_aapl, monkeypatch):
+    def falla(*args):
+        raise RuntimeError("Gemini está saturado ahora mismo.")
+
+    monkeypatch.setattr(views, "explicar_empresa", falla)
+
+    respuesta = client.get("/empresa/AAPL/?explicar=1")
+
+    assert respuesta.status_code == 200
+    assert "No se pudo generar la explicación" in respuesta.text
+    assert "Deuda / activos" in respuesta.text
 
 
 def test_pagina_empresa_acepta_minusculas(client, db_con_aapl):

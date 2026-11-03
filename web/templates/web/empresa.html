@@ -25,6 +25,18 @@
     </article>
   {% endif %}
 
+  {% if explicacion %}
+    <article>
+      <header><strong>Explicación de la IA</strong> <small>({{ modelo|default:"Gemini" }}, a partir de las cifras de esta página)</small></header>
+      {{ explicacion|linebreaks }}
+      <footer>
+        <small>La IA no calcula: solo explica las cifras ya calculadas, y puede equivocarse al interpretarlas.</small>
+      </footer>
+    </article>
+  {% else %}
+    <p><a href="?explicar=1" role="button">Explicar con IA</a> <small>(tarda unos segundos)</small></p>
+  {% endif %}
+
   <div class="tabla">
     <table>
       <thead>

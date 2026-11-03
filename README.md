@@ -5,8 +5,8 @@ Trabajo Fin de Grado (Finanzas + RRLL y RRHH, Universidad de Sevilla).
 Analista financiero asistido por IA: descarga los estados financieros oficiales
 de [SEC EDGAR](https://www.sec.gov/edgar) (cuentas anuales 10-K) y la cotización
 de Yahoo Finance (librería `yfinance`), los limpia, valida y guarda en DuckDB, y calcula ratios con código determinista y probado.
-En fases posteriores, un LLM interpretará las métricas ya calculadas: **el LLM
-nunca calcula cifras**.
+Un LLM (Gemini, plan gratuito de su API) explica las métricas ya calculadas: **el
+LLM nunca calcula cifras**; solo recibe la ficha con las cifras de la web.
 
 ## Puesta en marcha (Windows)
 
@@ -15,6 +15,7 @@ python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
 copy .env.example .env   # y pon tu nombre y email en SEC_USER_AGENT (lo exige la SEC)
+# en GEMINI_API_KEY tu clave de aistudio.google.com (gratis)
 # y en DJANGO_SECRET_KEY el resultado de:
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 python manage.py migrate # crea la base interna de Django (db.sqlite3)
@@ -52,6 +53,8 @@ src/data/transformer.py    JSON -> DataFrame y trazabilidad
 src/data/validator.py      comprobaciones antes de guardar
 src/database/duckdb_manager.py   SQL: guardar (acumulando), leer y unir los 3 estados
 src/financial/ratios.py    fórmulas de los ratios (sin LLM)
+src/formato.py             cómo se escribe cada cifra (web y LLM ven lo mismo)
+src/llm/explicador.py      el LLM (Gemini) explica la ficha de una empresa
 config/                    configuración de Django (settings, urls)
 web/                       app de Django: vistas y plantillas; solo llama a src/pipeline.py
 docs/decisiones.md         decisiones de diseño y sus motivos

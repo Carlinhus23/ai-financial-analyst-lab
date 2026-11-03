@@ -1,28 +1,16 @@
-import math
-
 from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
 
 from src.financial.ratios import NOMBRES_RATIOS
+from src.formato import formatear
 from src.pipeline import (
+    explicar_empresa,
     listar_empresas,
     obtener_comparacion,
     obtener_perfil,
     obtener_ratios,
 )
-
-# Cómo se muestra cada ratio. Es solo presentación: las cifras llegan ya
-# calculadas desde src/ y aquí no se hace ninguna cuenta financiera.
-RATIOS_EN_PORCENTAJE = {
-    "deuda_sobre_activos",
-    "margen_bruto",
-    "margen_operativo",
-    "margen_neto",
-    "roa",
-    "roe",
-    "margen_fcf",
-}
 
 
 def _ruta_db():
@@ -36,14 +24,6 @@ def _empresas_disponibles():
     return listar_empresas(_ruta_db())
 
 
-def _formatear(columna, valor):
-    if valor is None or math.isnan(valor):
-        return "—"
-    if columna in RATIOS_EN_PORCENTAJE:
-        return f"{valor * 100:.1f} %".replace(".", ",")
-    return f"{valor:.2f}".replace(".", ",")
-
-
 def _formatear_perfil(perfil):
     # Solo presentación: el PER ya llega calculado desde src/.
     millones = f"{perfil['market_cap'] / 1e6:,.0f}".replace(",", ".")
@@ -52,10 +32,10 @@ def _formatear_perfil(perfil):
         "sector": perfil["sector"],
         "industria": perfil["industry"],
         "moneda": perfil["currency"],
-        "precio": f"{perfil['price']:.2f}".replace(".", ","),
+        "precio": formatear("precio", perfil["price"]),
         "variacion": f"{perfil['change_percentage']:+.2f} %".replace(".", ","),
         "capitalizacion": f"{millones} M",
-        "per": _formatear("per", perfil["per"]),
+        "per": formatear("per", perfil["per"]),
         "fecha": perfil["date"],
     }
 
@@ -72,11 +52,20 @@ def empresa(request, symbol):
     ratios = obtener_ratios([symbol], _ruta_db())
     perfil = obtener_perfil(symbol, _ruta_db())
 
+    # La explicación de la IA solo se pide al pulsar el botón (?explicar=1):
+    # tarda unos segundos y usa la API de Gemini.
+    explicacion, modelo = None, None
+    if "explicar" in request.GET:
+        try:
+            explicacion, modelo = explicar_empresa(symbol, _ruta_db())
+        except RuntimeError as error:
+            explicacion = f"No se pudo generar la explicación: {error}"
+
     # Misma forma que en la terminal: una fila por ratio, una columna por año.
     filas = [
         {
             "nombre": nombre,
-            "valores": [_formatear(columna, valor) for valor in ratios[columna]],
+            "valores": [formatear(columna, valor) for valor in ratios[columna]],
         }
         for columna, nombre in NOMBRES_RATIOS.items()
     ]
@@ -89,6 +78,8 @@ def empresa(request, symbol):
         "fuente": ratios["fuente"].iloc[0],
         "extraccion": ratios["fecha_extraccion_utc"].max(),
         "perfil": _formatear_perfil(perfil) if perfil else None,
+        "explicacion": explicacion,
+        "modelo": modelo,
     }
     return render(request, "web/empresa.html", contexto)
 
@@ -102,7 +93,7 @@ def comparar(request):
             "symbol": fila["symbol"],
             "sector": fila["sector"],
             "ejercicio": fila["fiscal_year"],
-            "valores": [_formatear(columna, fila[columna]) for columna in columnas],
+            "valores": [formatear(columna, fila[columna]) for columna in columnas],
         }
         for fila in datos
     ]
