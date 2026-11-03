@@ -1,11 +1,10 @@
 # Orquesta el motor: une las piezas de src/ en operaciones de alto nivel.
 # main.py y Django solo llaman a estas funciones.
 
-from src.data.fmp_client import (
+from src.data.sec_client import (
     get_balance_sheet,
     get_cash_flow_statement,
     get_income_statement,
-    get_profile,
 )
 from src.data.transformer import añadir_trazabilidad, estado_a_dataframe
 from src.data.validator import (
@@ -14,6 +13,7 @@ from src.data.validator import (
     validar_flujos_caja,
     validar_perfil,
 )
+from src.data.yahoo_client import get_profile
 from src.database.duckdb_manager import (
     RUTA_DB,
     guardar_estado,
@@ -28,7 +28,9 @@ from src.financial.ratios import (
     calcular_ratios_rentabilidad,
 )
 
-FUENTE = "Financial Modeling Prep"
+# Cada dato guarda de dónde sale: estados de la SEC, cotización de Yahoo.
+FUENTE = "SEC EDGAR (10-K)"
+FUENTE_COTIZACION = "Yahoo Finance"
 
 
 def actualizar_empresa(symbol, num_periodos=5, ruta_db=RUTA_DB):
@@ -47,7 +49,7 @@ def actualizar_empresa(symbol, num_periodos=5, ruta_db=RUTA_DB):
     validar_flujos_caja(flujos, periodos_esperados=num_periodos)
 
     perfil = estado_a_dataframe(get_profile(symbol))
-    perfil = añadir_trazabilidad(perfil, fuente=FUENTE)
+    perfil = añadir_trazabilidad(perfil, fuente=FUENTE_COTIZACION)
     # El perfil no trae fecha: se usa el día de descarga (una foto por día).
     perfil["date"] = perfil["fecha_extraccion_utc"].dt.normalize()
     validar_perfil(perfil)
@@ -80,6 +82,21 @@ def obtener_perfil(symbol, ruta_db=RUTA_DB):
     datos = obtener_datos_analisis([symbol], ruta_db)
     perfil["per"] = calcular_per(perfil["market_cap"], datos["net_income"].iloc[-1])
     return perfil
+
+
+def obtener_comparacion(ruta_db=RUTA_DB):
+    # Último ejercicio de cada empresa, con su sector y su PER, para
+    # compararlas. Devuelve una lista de diccionarios ordenada por sector.
+    ultimos = obtener_ratios(None, ruta_db).groupby("symbol").tail(1)
+
+    filas = []
+    for fila in ultimos.to_dict("records"):
+        perfil = obtener_perfil(fila["symbol"], ruta_db) or {}
+        fila["sector"] = perfil.get("sector", "—")
+        fila["per"] = perfil.get("per", float("nan"))
+        filas.append(fila)
+
+    return sorted(filas, key=lambda fila: fila["sector"])
 
 
 def listar_empresas(ruta_db=RUTA_DB):

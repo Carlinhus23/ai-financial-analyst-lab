@@ -14,11 +14,12 @@
   <header>
     <nav>
       <ul><li><a href="{% url 'inicio' %}"><strong>AI Financial Analyst</strong></a></li></ul>
+      <ul><li><a href="{% url 'comparar' %}">Comparar</a></li></ul>
     </nav>
   </header>
   <main>
     {% block contenido %}{% endblock %}
   </main>
-  <footer><small>TFG · Universidad de Sevilla · Datos: Financial Modeling Prep</small></footer>
+  <footer><small>TFG · Universidad de Sevilla · Datos: SEC EDGAR (estados) y Yahoo Finance (cotización)</small></footer>
 </body>
 </html>

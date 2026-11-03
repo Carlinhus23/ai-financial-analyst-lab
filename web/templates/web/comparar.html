@@ -1,0 +1,40 @@
+{% extends "web/base.html" %}
+
+{% block titulo %}Comparar · AI Financial Analyst{% endblock %}
+
+{% block contenido %}
+  <h1>Comparar empresas</h1>
+  {% if filas %}
+    <p>Último ejercicio fiscal de cada empresa, ordenadas por sector: compara mejor dentro del mismo sector.</p>
+
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Empresa</th>
+            <th>Sector</th>
+            <th>Ejercicio</th>
+            {% for columna in columnas %}<th>{{ columna }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for fila in filas %}
+            <tr>
+              <th><a href="{% url 'empresa' fila.symbol %}">{{ fila.symbol }}</a></th>
+              <td>{{ fila.sector }}</td>
+              <td>{{ fila.ejercicio }}</td>
+              {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <p><small>
+      Cada empresa cierra su ejercicio en una fecha distinta (Apple en septiembre, Microsoft en junio...).
+      PER con la cotización más reciente descargada. "—" = no calculable.
+    </small></p>
+  {% else %}
+    <p>Todavía no hay datos. Ejecuta <code>python main.py</code> para descargarlos.</p>
+  {% endif %}
+{% endblock %}

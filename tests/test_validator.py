@@ -18,7 +18,7 @@ def balance_valido(num_periodos=3):
             "total_assets": [350_000_000_000] * num_periodos,
             "total_debt": [120_000_000_000] * num_periodos,
             "cash_and_cash_equivalents": [30_000_000_000] * num_periodos,
-            "net_debt": [90_000_000_000] * num_periodos,
+            "total_liabilities_and_total_equity": [350_000_000_000] * num_periodos,
         }
     )
 
@@ -43,9 +43,9 @@ def test_falla_si_esta_vacio():
 
 
 def test_falla_si_falta_una_columna():
-    df = balance_valido().drop(columns=["net_debt"])
+    df = balance_valido().drop(columns=["total_liabilities_and_total_equity"])
 
-    with pytest.raises(ValueError, match="net_debt"):
+    with pytest.raises(ValueError, match="total_liabilities_and_total_equity"):
         validar_balance(df)
 
 
@@ -74,34 +74,37 @@ def test_falla_si_total_assets_tiene_nulos():
         validar_balance(df)
 
 
-def test_acepta_redondeo_pequeno_en_deuda_neta():
+def test_acepta_redondeo_pequeno_en_el_balance():
     df = balance_valido()
-    df["net_debt"] = df["net_debt"] + 1_000  # 1.000 $ sobre 90.000 M$
+    # 1.000 $ sobre 350.000 M$
+    df["total_liabilities_and_total_equity"] += 1_000
 
     assert validar_balance(df) is True
 
 
-def test_falla_si_deuda_neta_no_cuadra_e_indica_la_fecha():
+def test_falla_si_el_balance_no_cuadra_e_indica_la_fecha():
     df = balance_valido()
-    df.loc[2, "net_debt"] = 50_000_000_000
+    df.loc[2, "total_liabilities_and_total_equity"] = 300_000_000_000
 
     with pytest.raises(ValueError, match="2023-12-31"):
         validar_balance(df)
 
 
-def test_deuda_neta_esperada_cero_tolera_error_de_coma_flotante():
-    df = balance_valido(num_periodos=1).astype({"net_debt": float})
-    df["cash_and_cash_equivalents"] = df["total_debt"]
-    df["net_debt"] = 1e-9
+def test_margen_minimo_de_una_unidad_aunque_la_cifra_sea_cero():
+    df = balance_valido(num_periodos=1).astype(
+        {"total_assets": float, "total_liabilities_and_total_equity": float}
+    )
+    df["total_assets"] = 0.5
+    df["total_liabilities_and_total_equity"] = 0.0
 
     assert validar_balance(df) is True
 
 
-def test_falla_si_deuda_neta_es_nula():
-    df = balance_valido().astype({"net_debt": float})
-    df.loc[0, "net_debt"] = None
+def test_falla_si_pasivo_mas_patrimonio_es_nulo():
+    df = balance_valido().astype({"total_liabilities_and_total_equity": float})
+    df.loc[0, "total_liabilities_and_total_equity"] = None
 
-    with pytest.raises(ValueError, match="deuda neta"):
+    with pytest.raises(ValueError, match="balance"):
         validar_balance(df)
 
 
@@ -157,7 +160,6 @@ def flujos_validos():
             "date": pd.to_datetime(["2024-09-28", "2025-09-27"]),
             "operating_cash_flow": [118, 111],
             "capital_expenditure": [-9, -13],
-            "free_cash_flow": [109, 98],
         }
     )
 
@@ -167,9 +169,9 @@ def test_flujos_caja_validos_pasan():
 
 
 def test_flujos_caja_falla_si_faltan_columnas():
-    df = flujos_validos().drop(columns=["free_cash_flow"])
+    df = flujos_validos().drop(columns=["capital_expenditure"])
 
-    with pytest.raises(ValueError, match="free_cash_flow"):
+    with pytest.raises(ValueError, match="capital_expenditure"):
         validar_flujos_caja(df)
 
 
@@ -184,17 +186,8 @@ def test_flujos_caja_falla_si_flujo_operativo_nulo():
 def test_flujos_caja_falla_si_capex_positivo():
     df = flujos_validos()
     df["capital_expenditure"] = [9, 13]
-    df["free_cash_flow"] = [127, 124]  # cuadraría, pero el signo está mal
 
     with pytest.raises(ValueError, match="capital_expenditure"):
-        validar_flujos_caja(df)
-
-
-def test_flujos_caja_falla_si_fcf_no_cuadra_e_indica_la_fecha():
-    df = flujos_validos()
-    df.loc[1, "free_cash_flow"] = 111  # FCF = OCF: como si ignorara el capex
-
-    with pytest.raises(ValueError, match="2025-09-27"):
         validar_flujos_caja(df)
 
 
@@ -210,7 +203,6 @@ def perfil_valido():
             "change_percentage": [-0.15],
             "market_cap": [2400],
             "currency": ["USD"],
-            "image": ["https://example.com/aapl.png"],
         }
     )
 

@@ -8,7 +8,6 @@
   {% if perfil %}
     <article>
       <header>
-        <img src="{{ perfil.logo }}" alt="" width="32" height="32">
         <strong>{{ perfil.nombre }}</strong> · {{ perfil.sector }} · {{ perfil.industria }}
       </header>
       <p>
@@ -18,7 +17,7 @@
       </p>
       <footer>
         <small>
-          Cotización descargada el {{ perfil.fecha|date:"Y-m-d" }}.
+          Cotización de Yahoo Finance del {{ perfil.fecha|date:"Y-m-d" }}.
           PER = capitalización actual / beneficio neto del último ejercicio.
           <a href="https://finance.yahoo.com/quote/{{ symbol }}/news">Noticias en Yahoo Finance</a>
         </small>

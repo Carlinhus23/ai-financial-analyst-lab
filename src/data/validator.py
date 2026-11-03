@@ -4,7 +4,7 @@ COLUMNAS_BALANCE = [
     "total_assets",
     "total_debt",
     "cash_and_cash_equivalents",
-    "net_debt",
+    "total_liabilities_and_total_equity",
 ]
 
 COLUMNAS_RESULTADOS = [
@@ -21,7 +21,6 @@ COLUMNAS_FLUJOS_CAJA = [
     "date",
     "operating_cash_flow",
     "capital_expenditure",
-    "free_cash_flow",
 ]
 
 COLUMNAS_PERFIL = [
@@ -34,7 +33,6 @@ COLUMNAS_PERFIL = [
     "change_percentage",
     "market_cap",
     "currency",
-    "image",
 ]
 
 
@@ -55,7 +53,8 @@ def _validar_comun(df, columnas_obligatorias, periodos_esperados):
 
 
 def _comprobar_cuadre(df, informado, esperado, nombre, tolerancia):
-    # Comprueba que una cifra que da la fuente coincide con nuestro cálculo.
+    # Comprueba que una cifra que da la fuente coincide con otra que debe ser
+    # igual (por una identidad contable).
     # Tolerancia relativa para redondeos de la fuente; como mínimo 1 unidad
     # monetaria para que un valor esperado de 0 no exija exactitud total.
     diferencia = (informado - esperado).abs()
@@ -73,11 +72,13 @@ def validar_balance(df, periodos_esperados=None, tolerancia=1e-6):
     if not df["total_assets"].notna().all():
         raise ValueError("Hay valores vacíos en total_assets.")
 
+    # Identidad contable: activo = pasivo + patrimonio. Detecta cifras de
+    # años o periodos mezclados al leer la fuente.
     _comprobar_cuadre(
         df,
-        informado=df["net_debt"],
-        esperado=df["total_debt"] - df["cash_and_cash_equivalents"],
-        nombre="La deuda neta",
+        informado=df["total_assets"],
+        esperado=df["total_liabilities_and_total_equity"],
+        nombre="El balance (activo = pasivo + patrimonio)",
         tolerancia=tolerancia,
     )
 
@@ -96,24 +97,16 @@ def validar_cuenta_resultados(df, periodos_esperados=None):
     return True
 
 
-def validar_flujos_caja(df, periodos_esperados=None, tolerancia=1e-6):
+def validar_flujos_caja(df, periodos_esperados=None):
     _validar_comun(df, COLUMNAS_FLUJOS_CAJA, periodos_esperados)
 
     if not df["operating_cash_flow"].notna().all():
         raise ValueError("Hay valores vacíos en operating_cash_flow.")
 
-    # FMP da el capex en negativo (salida de caja) y nuestro FCF lo suma.
+    # El capex llega en negativo (salida de caja) y nuestro FCF lo suma.
     # Si algún día llegara en positivo, el FCF saldría inflado sin avisar.
     if (df["capital_expenditure"] > 0).any():
         raise ValueError("capital_expenditure positivo: se esperaba en negativo.")
-
-    _comprobar_cuadre(
-        df,
-        informado=df["free_cash_flow"],
-        esperado=df["operating_cash_flow"] + df["capital_expenditure"],
-        nombre="El flujo de caja libre",
-        tolerancia=tolerancia,
-    )
 
     return True
 

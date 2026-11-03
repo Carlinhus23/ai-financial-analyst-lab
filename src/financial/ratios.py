@@ -123,8 +123,8 @@ def calcular_roe(df):
 
 
 def calcular_flujo_caja_libre(df):
-    # Lo calculamos nosotros en vez de usar free_cash_flow de FMP (el
-    # validador ya comprueba que coinciden). El capex llega en negativo.
+    # Lo calculamos nosotros: la SEC no da el FCF. El capex llega en negativo
+    # (el validador lo comprueba).
     df_resultado = df.copy()
     df_resultado["flujo_caja_libre"] = (
         df_resultado["operating_cash_flow"] + df_resultado["capital_expenditure"]

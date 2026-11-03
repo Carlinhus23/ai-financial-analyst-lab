@@ -11,7 +11,7 @@ def test_pipeline_completo_sin_api(api_falsa, tmp_path):
 
     fila = ratios.iloc[0]
     assert fila["symbol"] == "AAPL"
-    assert fila["fuente"] == "Financial Modeling Prep"
+    assert fila["fuente"] == "SEC EDGAR (10-K)"
     assert fila["deuda_sobre_activos"] == pytest.approx(0.25)
     assert fila["liquidez_corriente"] == pytest.approx(1.5)
     assert fila["margen_neto"] == pytest.approx(0.24)
@@ -32,7 +32,21 @@ def test_perfil_guardado_con_per(api_falsa, tmp_path):
 
     assert perfil["company_name"] == "Apple Inc."
     assert perfil["sector"] == "Technology"
+    assert perfil["fuente"] == "Yahoo Finance"
     assert perfil["per"] == pytest.approx(20)  # 2400 / 120
+
+
+def test_comparacion_una_fila_por_empresa_con_sector_y_per(api_falsa, tmp_path):
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+
+    filas = pipeline.obtener_comparacion(ruta_db=ruta_db)
+
+    assert len(filas) == 1
+    assert filas[0]["symbol"] == "AAPL"
+    assert filas[0]["sector"] == "Technology"
+    assert filas[0]["per"] == pytest.approx(20)
+    assert filas[0]["deuda_sobre_activos"] == pytest.approx(0.25)
 
 
 def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):

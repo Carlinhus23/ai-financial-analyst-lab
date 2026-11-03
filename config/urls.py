@@ -6,5 +6,6 @@ from web import views
 urlpatterns = [
     path("", views.inicio, name="inicio"),
     path("empresa/<str:symbol>/", views.empresa, name="empresa"),
+    path("comparar/", views.comparar, name="comparar"),
     path("admin/", admin.site.urls),
 ]

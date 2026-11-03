@@ -1,11 +1,11 @@
 from src.financial.ratios import NOMBRES_RATIOS
 from src.pipeline import actualizar_empresa, obtener_ratios
 
-# Empresas del S&P 500 de sectores distintos (lista a mano: la lista oficial
-# del índice es de pago en FMP). Sin bancos ni aseguradoras: su balance no
-# tiene activo/pasivo corriente y varios ratios no tendrían sentido.
-# Probadas el 22-10-2026 y de pago en el plan de FMP (402): PG, CAT, NEE, MCD,
-# HON, UPS, LLY y las eléctricas DUK, SO, AEP, EXC, D (por eso no hay eléctricas).
+# Empresas del S&P 500 de sectores distintos, elegidas a mano. Sin bancos ni
+# aseguradoras: su balance no tiene activo/pasivo corriente y varios ratios no
+# tendrían sentido. Desde que los datos vienen de la SEC (03-11-2026) se puede
+# añadir cualquier empresa que presente cuentas en EE. UU. (antes PG, CAT, LLY
+# o las eléctricas eran de pago en FMP).
 EMPRESAS = [
     "AAPL",  # Tecnología
     "MSFT",  # Tecnología

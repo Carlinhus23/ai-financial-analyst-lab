@@ -1,12 +1,12 @@
 # AI Financial Analyst (TFG)
 
-Analista financiero asistido por IA. Recupera estados financieros (Financial Modeling Prep), los limpia y valida, los guarda, calcula ratios con código determinista y, más adelante, un LLM interpreta métricas ya calculadas. Es el TFG de Carlos (Finanzas + RRLL y RRHH, Universidad de Sevilla). Idioma de trabajo: español.
+Analista financiero asistido por IA. Recupera estados financieros oficiales (SEC EDGAR, 10-K) y la cotización (Yahoo Finance, `yfinance`), los limpia y valida, los guarda, calcula ratios con código determinista y, más adelante, un LLM interpreta métricas ya calculadas. Es el TFG de Carlos (Finanzas + RRLL y RRHH, Universidad de Sevilla). Idioma de trabajo: español.
 
 ## Principio de diseño (no negociable)
 El LLM nunca calcula cifras ni ratios. Las fórmulas viven en Python/pandas, con tests. El LLM solo explica métricas ya calculadas y no inventa números.
 
 ## Arquitectura
-FMP API -> `src/data/fmp_client.py` -> `transformer.py` (pandas, snake_case) -> `validator.py` -> persistencia (`src/database/duckdb_manager.py`) -> `src/financial/ratios.py` -> (futuro) capa LLM -> (futuro) interfaz Django.
+SEC EDGAR -> `src/data/sec_client.py` (+ Yahoo -> `yahoo_client.py` para el perfil) -> `transformer.py` (pandas, snake_case) -> `validator.py` -> persistencia (`src/database/duckdb_manager.py`) -> `src/financial/ratios.py` -> (futuro) capa LLM -> (futuro) interfaz Django.
 
 Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo llama a `src/`. Así el motor se prueba sin web y la web es sustituible.
 
@@ -25,12 +25,12 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Carlos trabaja en dos ordenadores Windows: empezar con `.\inicio.ps1` (pull + deps + tests), terminar con `.\fin.ps1 "mensaje"` (tests + ruff + commit + push; no sube si algo falla). Ejecutar `fin.ps1` es la forma en que Carlos pide el commit.
 
 ## Seguridad
-- Nunca leas, imprimas ni pidas la clave API. `.env` está en `.gitignore` y no se sube. Mantén un `.env.example` solo con nombres de variables.
+- Nunca leas ni imprimas `.env`. Está en `.gitignore` y no se sube. Mantén un `.env.example` solo con nombres de variables. Ya no hay clave de FMP: `.env` tiene `SEC_USER_AGENT` (nombre y email de Carlos, lo exige la SEC; añadido con su permiso el 03-11-2026) y `DJANGO_SECRET_KEY`. Cada ordenador necesita los dos.
 
 ## Comandos conocidos
-- Pipeline completo: `python main.py` (desde la raíz). Hace 12 llamadas a FMP (4 por empresa: 3 estados + perfil).
+- Pipeline completo: `python main.py` (desde la raíz). Por empresa: 1 descarga de la SEC (los 3 estados) + 1 de Yahoo (perfil), más 1 de la tabla de tickers por ejecución. Sin límite diario.
 - Python del proyecto: `.\.venv\Scripts\python.exe` (el `python` global no tiene las dependencias).
-- Tests: `pytest` (config en `pyproject.toml`: solo recoge `tests/`, porque `learning/` tiene scripts `*_test.py` que llaman a la API real). Ningún test llama a FMP.
+- Tests: `pytest` (config en `pyproject.toml`: solo recoge `tests/`, porque `learning/` tiene scripts `*_test.py` que llaman a la API real de FMP). Ningún test llama a internet.
 - Linter: `ruff check .` (y `--fix`), formato: `ruff format .`. Config en `pyproject.toml`; excluye `learning/`.
 - Instalar dependencias: `python -m pip install -r requirements.txt`.
 - Ojo (Windows PowerShell 5.1): no reescribir archivos UTF-8 con `Get-Content`/`Set-Content`, corrompe las tildes. Usar las herramientas de edición o Python.
@@ -40,11 +40,14 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Confirmado (16-10-2026): flujos de caja añadidos; `python main.py` OK con 9 llamadas; `pytest` pasa 59/59 y `ruff check .` limpio.
 - Confirmado (20-10-2026): perfil de empresa + PER añadidos; `python main.py` OK con 12 llamadas; `pytest` 67/67; ruff limpio; las 4 páginas web dan 200.
 - Confirmado (22-10-2026): 12 empresas (AAPL, MSFT, NVDA, GOOGL, AMZN, KO, PEP, WMT, JNJ, XOM, GE, PFE) OK con `python main.py` (48 llamadas); `pytest` 71/71; ruff limpio. `main.py` sigue con las demás si una empresa falla y lo resume al final. De pago en el plan FMP (402): PG, CAT, NEE, MCD, HON, UPS, LLY y eléctricas (DUK, SO, AEP, EXC, D).
-- `fmp_client.py` nunca relanza errores de `requests` (su mensaje lleva la URL con la clave): los cambia por `RuntimeError` propios sin URL (`from None`). Tests en `tests/test_fmp_client.py`.
+- Confirmado (03-11-2026): página `/comparar/` (último ejercicio de cada empresa, sector, PER y 12 ratios, ordenada por sector; `pipeline.obtener_comparacion`, reutiliza `obtener_ratios` + `obtener_perfil`, ~1,3 s con 12 empresas). `pytest` 74/74; ruff limpio. Guía de estudio actualizada con lo del 22-10 y 03-11.
+- CAMBIO DE FUENTE (03-11-2026, decisión 4 en `docs/decisiones.md`): `fmp_client.py` eliminado. `sec_client.py` traduce XBRL us-gaap (companyfacts) a los nombres camelCase de FMP con `ETIQUETAS` (lista de etiquetas por partida, vale la primera con dato cada año), solo 10-K, duración ~1 año, la presentación más reciente; deuda = no corriente + corriente (o suma de piezas); bruto = presentado o ventas - coste; capex = -pagos; cifras en float (si no, DuckDB devuelve huecos como <NA> y rompe `math.isnan`); ejercicio = año de (cierre - 7 días); `CIKS_MANUALES` = {XOM: 34088} (la holding nueva de Exxon aún no tiene 10-K). `yahoo_client.get_profile` (yfinance 1.7.0) sin logo. Validador: balance = identidad activo = pasivo + patrimonio (`total_liabilities_and_total_equity`), sin cuadre de FCF. Fuentes: `FUENTE = "SEC EDGAR (10-K)"`, `FUENTE_COTIZACION = "Yahoo Finance"`. Huecos esperados: margen operativo de JNJ/XOM/GE/PFE, bruto de XOM/GE, prueba ácida de GOOGL. Deuda sin arrendamientos operativos (AMZN baja de 18,7 % a 8,4 %). Confirmado: `main.py` OK con las 12, `pytest` 81/81, ruff limpio, 14 páginas web 200.
+- (Histórico) Calidad de datos (03-11-2026): AAPL FY2026 (cierre 26-09-2026) llega de FMP con `total_debt` 2,0 mil M y `long_term_debt` 0 (en 2025: 112,4 y 78,3) -> deuda/activos 0,5 %. Casi seguro dato incompleto en FMP; el validador no lo detecta porque es coherente (net_debt = total_debt - cash). Resuelto al pasar a la SEC: sin 10-K presentado, la SEC no tiene ese año.
+- (Histórico) `fmp_client.py` nunca relanza errores de `requests` (su mensaje lleva la URL con la clave): los cambia por `RuntimeError` propios sin URL (`from None`). Tests en `tests/test_fmp_client.py`.
 - Arquitectura actual: `main.py` solo elige empresas y muestra; `src/pipeline.py` orquesta (`actualizar_empresa`, `obtener_ratios`); Django llamará a `src/pipeline.py` en el futuro.
-- `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement`, `get_profile` (comparten `_get_estado_financiero`). Plan FMP de Carlos: `profile` y `quote` OK; `news/stock` y `sp500-constituent` dan 402 (de pago).
+- (Histórico, ya no existe) `fmp_client.py`: `get_balance_sheet`, `get_income_statement`, `get_cash_flow_statement`, `get_profile` (comparten `_get_estado_financiero`). Plan FMP de Carlos: `profile` y `quote` OK; `news/stock` y `sp500-constituent` dan 402 (de pago).
 - `transformer.py`: `estado_a_dataframe` (antes `balance_sheet_a_dataframe`), `añadir_trazabilidad` (solo convierte `date` si existe: el perfil no la trae). (`unir_estados` en pandas se eliminó: la unión ahora es SQL.)
-- `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja`, `validar_perfil` (1 fila, `market_cap` > 0) (comparten `_validar_comun`; `_comprobar_cuadre` verifica deuda neta y FCF de FMP contra nuestro cálculo; el capex debe llegar en negativo).
+- `validator.py`: `validar_balance`, `validar_cuenta_resultados`, `validar_flujos_caja`, `validar_perfil` (1 fila, `market_cap` > 0) (comparten `_validar_comun`; `_comprobar_cuadre` verifica activo = pasivo + patrimonio (antes: deuda neta y FCF de FMP); el capex debe llegar en negativo).
 - `duckdb_manager.py`: `guardar_estado(df, tabla)` borra e inserta solo las (symbol, date) que trae, en transacción; `obtener_estado(tabla, symbols)`. Tablas permitidas: `balance_sheet`, `income_statement`, `cash_flow_statement`, `company_profile` (date = día de descarga: una foto por día, acumula histórico). `obtener_datos_analisis(symbols)`: INNER JOIN de los 3 estados por symbol+date con columnas explícitas (`b.inventory` = saldo del balance) y error si salen periodos duplicados.
 - Reparto acordado con Carlos: SQL para los datos (guardar, filtrar, unir); Python para fórmulas, limpieza y validación.
 - Ratios: deuda/activos, deuda/patrimonio, liquidez corriente, prueba ácida, ratio de caja, márgenes bruto/operativo/neto, ROA, ROE, flujo de caja libre (OCF + capex, calculado por nosotros), margen FCF, calidad del beneficio (OCF / beneficio neto; NaN si beneficio <= 0). ROA/ROE con balance de cierre (no media). PER = capitalización actual / beneficio neto del último ejercicio (`calcular_per`, escalares; NaN si beneficio <= 0), lo da `pipeline.obtener_perfil`.
@@ -57,8 +60,13 @@ Regla: `src/` es Python puro y no importa Django. Django (cuando llegue) solo ll
 - Carpeta de trabajo en este ordenador: `Desktop\AI FINANCIAL ANALYST`.
 
 ## Siguiente paso
+0. AL EMPEZAR (cuando Carlos diga "empecemos"), sin pedirle que haga nada a mano (lo pidió el 03-11-2026):
+   1. Ejecutar `.\inicio.ps1` (pull + dependencias, instala `yfinance` + tests). Si los tests no arrancan por `.env`, ver el punto 2 y repetir.
+   2. Comprobar SIN leer ni imprimir `.env` (p. ej. `python -c "from dotenv import dotenv_values; print('SEC_USER_AGENT' in dotenv_values('.env'), 'DJANGO_SECRET_KEY' in dotenv_values('.env'))"`). Si falta `SEC_USER_AGENT`, añadir al final: `SEC_USER_AGENT=Carlos Bárcena Aguilar carlosbarcenaaguilar@gmail.com` (Carlos dio permiso). Si falta `DJANGO_SECRET_KEY`, generar una nueva y añadirla. La `API_KEY` de FMP ya no se usa.
+   3. Si la base `ai_financial_analyst.duckdb` es anterior al cambio de fuente (su columna `fuente` en `balance_sheet` no es "SEC EDGAR (10-K)", o no existe la base), borrarla y ejecutar `python main.py` (debe terminar en "Pipeline completado correctamente").
+   4. Contarle a Carlos en 2-3 líneas qué se ha hecho.
 1. (19-10-2026) Carlos NO quiere avanzar hasta entender todo el código. Está estudiando con la "Guía de estudio del AI Financial Analyst" (Claude Doc, archivo por archivo y bloque a bloque): https://claude.ai/code/artifact/77b85f5f-732c-4545-bb96-3da49f64569d. Si cambia el código, actualizar la guía. Resolver sus dudas sobre ella antes de nada nuevo.
-2. (20-10-2026) Carlos eligió: primero un analista SIN IA completo, luego la IA (no tiene aún clave de Anthropic). Plan acordado (S&P 500 entero descartado: noticias/lista de pago y límite de llamadas): 1) ~~perfil + cotización + PER en la página de empresa, enlace a noticias de Yahoo~~ hecho; 2) ~~más empresas~~ hecho (12, sin bancos ni eléctricas); 3) página de comparación; 4) después, IA.
+2. (20-10-2026) Carlos eligió: primero un analista SIN IA completo, luego la IA (no tiene aún clave de Anthropic). Plan acordado (S&P 500 entero descartado: noticias/lista de pago y límite de llamadas): 1) ~~perfil + cotización + PER en la página de empresa, enlace a noticias de Yahoo~~ hecho; 2) ~~más empresas~~ hecho (12, sin bancos ni eléctricas); 3) ~~página de comparación~~ hecho; 4) después, IA.
 3. Objetivo general: prototipo para enseñar al profesor del TFG con el MÍNIMO código nuevo posible (bonito y fácil, sin abrumar). Web ya con Pico.css (CDN, versión classless en `base.html`; sin internet sale sin estilo). Ideas solo si hacen falta para la demo: comparar empresas, mostrar estados financieros, botón de actualizar (cuidado con el bloqueo de DuckDB).
 - Cada ordenador necesita `DJANGO_SECRET_KEY` en su `.env` (si falta, pytest ni arranca). Tras un pull con estados nuevos, regenerar la base con `python main.py`.
 

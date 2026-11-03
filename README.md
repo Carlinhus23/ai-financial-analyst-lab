@@ -2,9 +2,9 @@
 
 Trabajo Fin de Grado (Finanzas + RRLL y RRHH, Universidad de Sevilla).
 
-Analista financiero asistido por IA: descarga estados financieros de
-[Financial Modeling Prep](https://site.financialmodelingprep.com/), los limpia,
-valida y guarda en DuckDB, y calcula ratios con código determinista y probado.
+Analista financiero asistido por IA: descarga los estados financieros oficiales
+de [SEC EDGAR](https://www.sec.gov/edgar) (cuentas anuales 10-K) y la cotización
+de Yahoo Finance (librería `yfinance`), los limpia, valida y guarda en DuckDB, y calcula ratios con código determinista y probado.
 En fases posteriores, un LLM interpretará las métricas ya calculadas: **el LLM
 nunca calcula cifras**.
 
@@ -14,7 +14,7 @@ nunca calcula cifras**.
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 python -m pip install -r requirements.txt
-copy .env.example .env   # y pon tu clave de FMP en API_KEY
+copy .env.example .env   # y pon tu nombre y email en SEC_USER_AGENT (lo exige la SEC)
 # y en DJANGO_SECRET_KEY el resultado de:
 python -c "from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())"
 python manage.py migrate # crea la base interna de Django (db.sqlite3)
@@ -34,9 +34,9 @@ scripts, ejecuta una vez: `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
 ## Uso
 
 ```powershell
-python main.py    # descarga balance, resultados y flujos de AAPL, MSFT y KO (5 años) y muestra sus ratios
+python main.py    # descarga balance, resultados y flujos (5 años) y cotización de 12 empresas y muestra sus ratios
 python manage.py runserver   # web local en http://127.0.0.1:8000/ (lee lo ya descargado)
-pytest            # tests (no llaman a la API)
+pytest            # tests (no llaman a internet)
 ruff check .      # revisa el código
 ruff format .     # da formato al código
 ```
@@ -46,7 +46,8 @@ ruff format .     # da formato al código
 ```
 main.py                    punto de entrada: elige empresas y muestra resultados
 src/pipeline.py            orquesta el motor: actualizar_empresa(), obtener_ratios()
-src/data/fmp_client.py     descarga de la API de FMP
+src/data/sec_client.py     estados financieros de la SEC (traduce las etiquetas XBRL)
+src/data/yahoo_client.py   perfil y cotización de Yahoo Finance
 src/data/transformer.py    JSON -> DataFrame y trazabilidad
 src/data/validator.py      comprobaciones antes de guardar
 src/database/duckdb_manager.py   SQL: guardar (acumulando), leer y unir los 3 estados
@@ -76,6 +77,7 @@ proceso tiene la base abierta.
 | Margen neto | `net_income / revenue` | `NaN` |
 | ROA | `net_income / total_assets` | `NaN` |
 | ROE | `net_income / total_stockholders_equity` | `NaN` (también si el patrimonio ≤ 0) |
+| PER | `capitalización / net_income` (último ejercicio) | `NaN` (también si el beneficio ≤ 0) |
 | Flujo de caja libre | `operating_cash_flow + capital_expenditure` (capex en negativo) | — |
 | Margen FCF | `flujo_caja_libre / revenue` | `NaN` |
 | Calidad del beneficio | `operating_cash_flow / net_income` | `NaN` (también si el beneficio ≤ 0) |
@@ -85,8 +87,10 @@ ROA y ROE usan el balance de cierre del año, no la media del año
 
 ## Trazabilidad
 
-Cada fila guardada lleva `symbol`, `date`, `fiscal_year`, `period` y
-`reported_currency` (de FMP), más `fuente` y `fecha_extraccion_utc` (añadidas
-por el pipeline). FMP da los importes en unidades de la moneda, no en miles.
+Cada fila guardada lleva `symbol`, `date` (cierre del ejercicio), `fiscal_year` y
+`reported_currency`, más `fuente` ("SEC EDGAR (10-K)" o "Yahoo Finance") y
+`fecha_extraccion_utc` (añadidas por el pipeline). Los importes van en dólares,
+no en miles. Cómo se traduce cada partida de la SEC: `src/data/sec_client.py` y
+`docs/decisiones.md`.
 La base de datos acumula: volver a descargar una empresa sustituye sus filas
 por (`symbol`, `date`) sin tocar las demás.

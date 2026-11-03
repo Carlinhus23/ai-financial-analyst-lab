@@ -5,7 +5,12 @@ from django.http import Http404
 from django.shortcuts import render
 
 from src.financial.ratios import NOMBRES_RATIOS
-from src.pipeline import listar_empresas, obtener_perfil, obtener_ratios
+from src.pipeline import (
+    listar_empresas,
+    obtener_comparacion,
+    obtener_perfil,
+    obtener_ratios,
+)
 
 # Cómo se muestra cada ratio. Es solo presentación: las cifras llegan ya
 # calculadas desde src/ y aquí no se hace ninguna cuenta financiera.
@@ -46,7 +51,6 @@ def _formatear_perfil(perfil):
         "nombre": perfil["company_name"],
         "sector": perfil["sector"],
         "industria": perfil["industry"],
-        "logo": perfil["image"],
         "moneda": perfil["currency"],
         "precio": f"{perfil['price']:.2f}".replace(".", ","),
         "variacion": f"{perfil['change_percentage']:+.2f} %".replace(".", ","),
@@ -87,3 +91,23 @@ def empresa(request, symbol):
         "perfil": _formatear_perfil(perfil) if perfil else None,
     }
     return render(request, "web/empresa.html", contexto)
+
+
+def comparar(request):
+    # Una fila por empresa (su último ejercicio) y una columna por ratio.
+    columnas = {"per": "PER", **NOMBRES_RATIOS}
+    datos = obtener_comparacion(_ruta_db()) if _empresas_disponibles() else []
+    filas = [
+        {
+            "symbol": fila["symbol"],
+            "sector": fila["sector"],
+            "ejercicio": fila["fiscal_year"],
+            "valores": [_formatear(columna, fila[columna]) for columna in columnas],
+        }
+        for fila in datos
+    ]
+    return render(
+        request,
+        "web/comparar.html",
+        {"columnas": columnas.values(), "filas": filas},
+    )

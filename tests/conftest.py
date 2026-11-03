@@ -4,9 +4,10 @@ import pytest
 
 from src import pipeline
 
-# Respuestas falsas con la misma forma que las de FMP (camelCase, lista de
-# diccionarios). Así el pipeline se prueba entero sin llamar a la API.
-BALANCE_FMP = [
+# Respuestas falsas con la misma forma que devuelven sec_client y yahoo_client
+# (camelCase, lista de diccionarios). Así el pipeline se prueba entero sin
+# llamar a internet.
+BALANCE_FALSO = [
     {
         "date": "2025-09-27",
         "symbol": "AAPL",
@@ -15,7 +16,7 @@ BALANCE_FMP = [
         "totalAssets": 400,
         "totalDebt": 100,
         "cashAndCashEquivalents": 40,
-        "netDebt": 60,
+        "totalLiabilitiesAndTotalEquity": 400,
         "totalStockholdersEquity": 80,
         "totalCurrentAssets": 150,
         "inventory": 10,
@@ -23,7 +24,7 @@ BALANCE_FMP = [
     }
 ]
 
-RESULTADOS_FMP = [
+RESULTADOS_FALSOS = [
     {
         "date": "2025-09-27",
         "symbol": "AAPL",
@@ -36,24 +37,22 @@ RESULTADOS_FMP = [
     }
 ]
 
-FLUJOS_FMP = [
+FLUJOS_FALSOS = [
     {
         "date": "2025-09-27",
         "symbol": "AAPL",
         "reportedCurrency": "USD",
         "fiscalYear": "2025",
-        "netIncome": 120,
         # En flujos, "inventory" es la variación del año, no el saldo: tiene
         # un valor absurdo a propósito para detectar si se colara en los ratios.
         "inventory": -999,
         "operatingCashFlow": 180,
         "capitalExpenditure": -30,
-        "freeCashFlow": 150,
     }
 ]
 
 # Sin "date", como el perfil real. PER esperado = 2400 / 120 = 20.
-PERFIL_FMP = [
+PERFIL_FALSO = [
     {
         "symbol": "AAPL",
         "companyName": "Apple Inc.",
@@ -63,7 +62,6 @@ PERFIL_FMP = [
         "changePercentage": -0.15,
         "marketCap": 2400,
         "currency": "USD",
-        "image": "https://example.com/aapl.png",
     }
 ]
 
@@ -71,12 +69,12 @@ PERFIL_FMP = [
 @pytest.fixture
 def api_falsa(monkeypatch):
     # monkeypatch sustituye, solo durante el test, las funciones que llaman
-    # a FMP por otras que devuelven los datos de arriba.
-    monkeypatch.setattr(pipeline, "get_balance_sheet", lambda s, limit: BALANCE_FMP)
+    # a internet por otras que devuelven los datos de arriba.
+    monkeypatch.setattr(pipeline, "get_balance_sheet", lambda s, limit: BALANCE_FALSO)
     monkeypatch.setattr(
-        pipeline, "get_income_statement", lambda s, limit: RESULTADOS_FMP
+        pipeline, "get_income_statement", lambda s, limit: RESULTADOS_FALSOS
     )
     monkeypatch.setattr(
-        pipeline, "get_cash_flow_statement", lambda s, limit: FLUJOS_FMP
+        pipeline, "get_cash_flow_statement", lambda s, limit: FLUJOS_FALSOS
     )
-    monkeypatch.setattr(pipeline, "get_profile", lambda s: PERFIL_FMP)
+    monkeypatch.setattr(pipeline, "get_profile", lambda s: PERFIL_FALSO)

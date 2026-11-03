@@ -14,8 +14,8 @@ def convertir_a_snake_case(nombre):
 
 
 def estado_a_dataframe(datos):
-    # Sirve para cualquier estado de FMP (balance, cuenta de resultados...):
-    # todos llegan como lista de diccionarios con camelCase y "date".
+    # Sirve para cualquier estado (balance, cuenta de resultados...) y para el
+    # perfil: todos llegan como lista de diccionarios con nombres en camelCase.
     df = pd.DataFrame(datos)
 
     # El perfil de empresa no trae "date"; los estados financieros sí.

@@ -49,3 +49,45 @@ reescribir la persistencia y haría depender el motor de Django.
 **Límite conocido:** DuckDB no permite que un proceso escriba mientras otro
 tiene el archivo abierto. No conviene ejecutar `python main.py` con la web
 encendida. Si llega a ser un problema, se revisará esta decisión.
+
+## 4. Estados financieros de la SEC y cotización de Yahoo, en lugar de FMP (03-11-2026)
+
+**Decisión:** los estados financieros salen de SEC EDGAR (cuentas anuales 10-K,
+`src/data/sec_client.py`) y el perfil con la cotización (precio, capitalización,
+sector) de Yahoo Finance (librería `yfinance`, `src/data/yahoo_client.py`).
+Ambos devuelven los datos con los nombres que usaba FMP, así que el resto del
+motor no cambia.
+
+**Motivo:**
+- El plan gratuito de FMP se quedaba corto: unas 250 llamadas al día, noticias y
+  lista del S&P 500 de pago, y empresas como PG, CAT, LLY o las eléctricas de pago.
+- La SEC es la fuente oficial: son las cifras que la empresa presenta ante el
+  regulador. Gratis, sin clave y para todas las empresas que cotizan en EE. UU.
+- FMP dio para Apple un ejercicio 2026 con la deuda casi a cero antes de que
+  Apple presentara su 10-K: probablemente salía de resultados preliminares. La
+  SEC solo tiene cuentas presentadas.
+
+**Cómo se traduce la SEC:** cada empresa etiqueta sus partidas a su manera
+(XBRL us-gaap). Cada partida tiene una lista de etiquetas por orden de
+preferencia y, cada año, vale la primera que tenga dato. Dos partidas se
+construyen:
+- Deuda financiera = deuda no corriente + deuda corriente. Si la empresa no da
+  la deuda corriente total, se suman sus piezas (deuda a largo que vence en el
+  año, pagarés y préstamos a corto). Sin arrendamientos operativos; en KO, XOM y
+  GE la deuda no corriente incluye arrendamientos financieros.
+- Beneficio bruto = el presentado o, si no, ventas - coste de ventas.
+
+**Límites conocidos:**
+- Muchas empresas no presentan resultado operativo (J&J, Exxon, GE, Pfizer) ni
+  beneficio bruto o coste de ventas (Exxon, GE): esos ratios salen "—". La SEC
+  no estandariza; los proveedores comerciales rellenan esos huecos con criterios
+  propios.
+- La validación del balance pasa de "deuda neta de FMP = deuda - caja" a la
+  identidad contable activo = pasivo + patrimonio. Ya no se contrasta el FCF con
+  la fuente: la SEC no lo da y lo calculamos nosotros.
+- yfinance no es un servicio oficial: Yahoo puede cambiarlo o bloquearlo. Por
+  eso solo se usa para la cotización, y sus fallos dan un error propio.
+- La SEC exige identificarse con nombre y email (`SEC_USER_AGENT` en `.env`).
+
+**Alternativas descartadas:** yfinance para todo (datos ya estandarizados, pero
+no oficiales y solo 4 años) y seguir con FMP (límites del plan gratuito).
