@@ -174,6 +174,7 @@ Cola nueva (07-11-2026), pequeñas y sin tocar la base:
     "mayor/menor" (visto en la mejora 21).
 18. Descargar la tabla de Comparar en CSV (como la mejora 8).
 19. Test que abre todas las páginas de la web y comprueba que dan 200.
+Loop parado por Carlos el 07-11-2026 tras la idea 15 (la 16 no se empezó).
 Siguiente: idea 16.
 Para probar algo que solo se ve al desplazarse: copiar la página con curl al
 scratchpad, añadir un <script> que haga scrollTop/scrollLeft, y capturar con
