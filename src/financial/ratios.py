@@ -27,6 +27,17 @@ NOMBRES_RATIOS = {
     "crecimiento_beneficio": "Crecimiento del beneficio",
 }
 
+# Los mismos ratios agrupados por lo que miden, para presentarlos por bloques.
+# Cada ratio está en un solo grupo (hay un test que lo comprueba).
+GRUPOS_RATIOS = {
+    "Endeudamiento": ["deuda_sobre_activos", "deuda_sobre_patrimonio"],
+    "Liquidez": ["liquidez_corriente", "prueba_acida", "ratio_caja"],
+    "Rentabilidad": ["margen_bruto", "margen_operativo", "margen_neto", "roa", "roe"],
+    "Eficiencia": ["rotacion_activos", "dias_inventario"],
+    "Flujo de caja": ["margen_fcf", "calidad_beneficio"],
+    "Crecimiento": ["crecimiento_ventas", "crecimiento_beneficio"],
+}
+
 
 def _dividir(numerador, denominador):
     return numerador / denominador.where(denominador != 0)

@@ -4,6 +4,8 @@ import pandas as pd
 import pytest
 
 from src.financial.ratios import (
+    GRUPOS_RATIOS,
+    NOMBRES_RATIOS,
     calcular_calidad_beneficio,
     calcular_crecimiento,
     calcular_deuda_sobre_activos,
@@ -393,3 +395,10 @@ def test_dias_inventario_con_coste_de_ventas_de_ventas_menos_bruto():
     assert resultado[0] == pytest.approx(30 / (500 - 135) * 365)  # = 30 días
     assert math.isnan(resultado[1])  # sin inventario (como Google)
     assert math.isnan(resultado[2])  # sin beneficio bruto (como Exxon)
+
+
+def test_cada_ratio_esta_en_un_solo_grupo():
+    agrupados = [columna for grupo in GRUPOS_RATIOS.values() for columna in grupo]
+
+    assert sorted(agrupados) == sorted(NOMBRES_RATIOS)  # ni falta ni sobra
+    assert len(agrupados) == len(set(agrupados))  # ninguno repetido

@@ -8,6 +8,8 @@
   <style>
     td { text-align: right; font-variant-numeric: tabular-nums; }
     .tabla { overflow-x: auto; }
+    /* Título de cada bloque de ratios: en mayúsculas pequeñas, como un rótulo. */
+    tr.grupo th { padding-top: 1.25rem; color: var(--pico-primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
     /* Portada: tarjetas en rejilla que se adaptan al ancho de la pantalla. */
     .tarjetas { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 1rem; margin-bottom: 1rem; }
     .tarjetas article { margin: 0; }

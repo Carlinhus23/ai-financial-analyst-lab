@@ -5,7 +5,11 @@ from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from src.data.sec_client import url_10k
-from src.financial.ratios import NOMBRES_RATIOS, calcular_medianas_sector
+from src.financial.ratios import (
+    GRUPOS_RATIOS,
+    NOMBRES_RATIOS,
+    calcular_medianas_sector,
+)
 from src.formato import formatear
 from src.pipeline import (
     explicar_empresa,
@@ -127,14 +131,21 @@ def empresa(request, symbol):
         except RuntimeError as error:
             explicacion = f"No se pudo generar la explicación: {error}"
 
-    # Misma forma que en la terminal: una fila por ratio, una columna por año.
-    filas = [
+    # Una fila por ratio y una columna por año, agrupadas en bloques
+    # (endeudamiento, liquidez...) con su título.
+    grupos = [
         {
-            "nombre": nombre,
-            "valores": [formatear(columna, valor) for valor in ratios[columna]],
-            "puntos": _minigrafico(ratios[columna].tolist()),
+            "nombre": grupo,
+            "filas": [
+                {
+                    "nombre": NOMBRES_RATIOS[columna],
+                    "valores": [formatear(columna, v) for v in ratios[columna]],
+                    "puntos": _minigrafico(ratios[columna].tolist()),
+                }
+                for columna in columnas
+            ],
         }
-        for columna, nombre in NOMBRES_RATIOS.items()
+        for grupo, columnas in GRUPOS_RATIOS.items()
     ]
 
     # Igual para los estados financieros, en millones y agrupados por estado.
@@ -153,7 +164,7 @@ def empresa(request, symbol):
         "symbol": symbol,
         "moneda": ratios["reported_currency"].iloc[0],
         "ejercicios": ratios["fiscal_year"].tolist(),
-        "filas": filas,
+        "grupos": grupos,
         "estados": estados,
         "fuente": ratios["fuente"].iloc[0],
         "url_10k": url_10k(symbol),

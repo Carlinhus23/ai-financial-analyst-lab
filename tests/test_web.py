@@ -303,3 +303,14 @@ def test_csv_de_empresa_sin_datos_da_404(client, db_con_aapl):
 
 def test_pagina_empresa_enlaza_el_csv(client, db_con_aapl):
     assert "/empresa/AAPL/csv/" in client.get("/empresa/AAPL/").text
+
+
+def test_pagina_empresa_agrupa_los_ratios_en_bloques(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    posiciones = [
+        texto.index(f">{grupo}</th>")
+        for grupo in ["Endeudamiento", "Liquidez", "Rentabilidad", "Crecimiento"]
+    ]
+    assert posiciones == sorted(posiciones)
+    assert texto.index(">Endeudamiento</th>") < texto.index("Deuda / activos")
