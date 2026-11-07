@@ -106,8 +106,10 @@ I8. Navegación: página actual marcada y selector rápido de empresa.
 
 - I1 · Portada con tarjetas (guía: mejora 11) · `fef633e` · 2/5 (07-11-2026).
   Depende de la 2.
+- I2 · Ratios agrupados en bloques (guía: mejora 12, `GRUPOS_RATIOS`) ·
+  `1c0e5cf` · 1/5 (07-11-2026). Depende de 2, 3 y 9.
 
-Loop reanudado el 07-11-2026 con prioridad a la interfaz. Siguiente: I2.
+Loop reanudado el 07-11-2026 con prioridad a la interfaz. Siguiente: I3.
 En mejoras visuales, MIRARLAS: reiniciar la web (con --noreload no recarga
 plantillas) y captura con Edge sin ventana:
 `msedge --headless=new --disable-gpu --hide-scrollbars --window-size=1280,1000
@@ -115,8 +117,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.32240` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.35630` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 18.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 19.
