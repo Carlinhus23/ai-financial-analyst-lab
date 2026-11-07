@@ -112,8 +112,10 @@ I8. Navegación: página actual marcada y selector rápido de empresa.
   `3d9b5eb` · 1/5 (07-11-2026). Depende de la 12.
 - I4 · Precio, capitalización y PER en grande (guía: mejora 14) · `959d2c6` ·
   1/5 (07-11-2026).
+- I5 · Verde/rojo solo para variaciones (guía: mejora 15,
+  `COLUMNAS_CON_SIGNO`) · `765ba58` · 2/5 (07-11-2026). Depende de 2, 11, 12, 14.
 
-Loop cada 3 min (Carlos, 07-11-2026), prioridad a la interfaz. Siguiente: I5.
+Loop cada 3 min (Carlos, 07-11-2026), prioridad a la interfaz. Siguiente: I6.
 En mejoras visuales, MIRARLAS: reiniciar la web (con --noreload no recarga
 plantillas) y captura con Edge sin ventana:
 `msedge --headless=new --disable-gpu --hide-scrollbars --window-size=1280,1000
@@ -121,8 +123,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.42090` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.44760` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 21.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 22.
