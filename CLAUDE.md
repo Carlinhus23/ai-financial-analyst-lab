@@ -1,4 +1,6 @@
-# AI Financial Analyst (TFG)
+# AI Financial Analyst (TFG) — LABORATORIO
+
+> ESTA CARPETA ES EL LABORATORIO (fork), no el proyecto principal. Repo: `ai-financial-analyst-lab` (remoto `origin`); el principal es el remoto `principal`. Aquí Claude hace mejoras experimentales en un loop y Carlos decide cuáles pasan al principal. Reglas del loop, cola de ideas e ids de la guía: `LABORATORIO.md` (leerlo antes de cada vuelta). Aquí SÍ se hace commit + push de cada mejora (Carlos lo autorizó el 07-11-2026); en el principal siguen las reglas de siempre.
 
 Analista financiero asistido por IA. Recupera estados financieros oficiales (SEC EDGAR, 10-K) y la cotización (Yahoo Finance, `yfinance`), los limpia y valida, los guarda, calcula ratios con código determinista y un LLM (Gemini, API gratuita) explica las métricas ya calculadas. Es el TFG de Carlos (Finanzas + RRLL y RRHH, Universidad de Sevilla). Idioma de trabajo: español.
 
