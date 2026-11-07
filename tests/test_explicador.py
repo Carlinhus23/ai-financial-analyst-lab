@@ -106,3 +106,14 @@ def test_si_un_modelo_tarda_demasiado_prueba_el_siguiente(gemini_falso, monkeypa
     monkeypatch.setattr(requests, "post", post_lento)
 
     assert explicador.explicar("ficha") == ("ok", explicador.MODELOS[1])
+
+
+def test_al_comparar_envia_las_instrucciones_de_comparar(gemini_falso):
+    llamadas, respuestas = gemini_falso
+    respuestas.append(RespuestaFalsa(200, "ok"))
+
+    explicador.explicar("dos fichas", explicador.INSTRUCCIONES_COMPARAR)
+
+    sistema = llamadas[0]["json"]["system_instruction"]["parts"][0]["text"]
+    assert sistema == explicador.INSTRUCCIONES_COMPARAR
+    assert "No digas cuál es mejor" in sistema

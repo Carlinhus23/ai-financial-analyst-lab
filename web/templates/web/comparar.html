@@ -7,6 +7,17 @@
   {% if filas %}
     <p>Último ejercicio fiscal de cada empresa, ordenadas por sector: compara mejor dentro del mismo sector.</p>
 
+    {# Elegir dos empresas y pedir a la IA que las compare. #}
+    <form action="{% url 'comparar_ia' %}" class="comparar-ia" onsubmit="this.querySelector('button').setAttribute('aria-busy', 'true');">
+      <select name="a" aria-label="Primera empresa" required>
+        {% for s in empresas_menu %}<option{% if forloop.first %} selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+      <select name="b" aria-label="Segunda empresa" required>
+        {% for s in empresas_menu %}<option{% if forloop.counter == 2 %} selected{% endif %}>{{ s }}</option>{% endfor %}
+      </select>
+      <button type="submit">Comparar con IA</button>
+    </form>
+
     <div class="tabla tabla-fija">
       <table>
         <thead>

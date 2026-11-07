@@ -1,0 +1,22 @@
+{% extends "web/base.html" %}
+
+{% block titulo %}{{ a }} frente a {{ b }} · AI Financial Analyst{% endblock %}
+
+{% block contenido %}
+  <h1><a href="{% url 'empresa' a %}">{{ a }}</a> frente a <a href="{% url 'empresa' b %}">{{ b }}</a></h1>
+
+  <article>
+    <header><strong>Comparación de la IA</strong> <small>({{ modelo|default:"Gemini" }}, a partir de las cifras de las dos empresas)</small></header>
+    {{ explicacion|linebreaks }}
+    <footer>
+      {% if dudosas %}
+        <p><mark>Atención: la IA ha escrito cifras que no están en las fichas: {{ dudosas|join:" · " }}. Revísalas antes de fiarte.</mark></p>
+      {% elif modelo %}
+        <p><small>Comprobado: todas las cifras de la comparación están en las fichas de las dos empresas.</small></p>
+      {% endif %}
+      <small>La IA no calcula ni dice cuál es mejor: solo compara cifras ya calculadas, y puede equivocarse al interpretarlas.</small>
+    </footer>
+  </article>
+
+  <p><a href="{% url 'comparar' %}">← Volver a Comparar</a></p>
+{% endblock %}

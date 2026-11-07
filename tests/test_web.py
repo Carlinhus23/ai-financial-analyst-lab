@@ -394,3 +394,32 @@ def test_metodologia_funciona_sin_base_de_datos(client, tmp_path, settings):
     settings.RUTA_DUCKDB = tmp_path / "no_existe.duckdb"
 
     assert client.get("/metodologia/").status_code == 200
+
+
+def test_comparar_tiene_el_formulario_de_comparar_con_ia(client, db_con_aapl):
+    texto = client.get("/comparar/").text
+
+    assert 'action="/comparar/ia/"' in texto
+    assert "Comparar con IA" in texto
+
+
+def test_comparar_ia_muestra_la_comparacion(client, db_con_aapl, monkeypatch):
+    monkeypatch.setattr(views, "_empresas_disponibles", lambda: ["AAPL", "KO"])
+    monkeypatch.setattr(
+        views, "comparar_empresas", lambda a, b, r: ("KO debe más.", "gemini-x", [])
+    )
+
+    texto = client.get("/comparar/ia/?a=aapl&b=KO").text
+
+    assert "KO debe más." in texto
+    assert "Comprobado: todas las cifras de la comparación" in texto
+
+
+def test_comparar_ia_exige_dos_empresas_distintas_con_datos(
+    client, db_con_aapl, monkeypatch
+):
+    monkeypatch.setattr(views, "_empresas_disponibles", lambda: ["AAPL", "KO"])
+
+    assert client.get("/comparar/ia/?a=AAPL&b=AAPL").status_code == 404
+    assert client.get("/comparar/ia/?a=AAPL&b=MSFT").status_code == 404
+    assert client.get("/comparar/ia/").status_code == 404

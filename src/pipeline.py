@@ -32,7 +32,7 @@ from src.financial.ratios import (
     calcular_ratios_rentabilidad,
 )
 from src.formato import formatear
-from src.llm.explicador import explicar
+from src.llm.explicador import INSTRUCCIONES, INSTRUCCIONES_COMPARAR, explicar
 from src.llm.verificador import cifras_no_encontradas
 
 # Cada dato guarda de dónde sale: estados de la SEC, cotización de Yahoo.
@@ -142,16 +142,30 @@ def explicar_empresa(symbol, ruta_db=RUTA_DB):
     # La IA explica la ficha de la empresa. Llama a Gemini: tarda unos segundos.
     # Devuelve (explicación, modelo que la ha escrito, cifras que la IA ha
     # escrito y no están en la ficha; vacía si todo cuadra).
+    ficha = ficha_empresa(symbol, ruta_db)
+    return _explicar_con_memoria(symbol, ficha, INSTRUCCIONES, ruta_db)
+
+
+def comparar_empresas(symbol_a, symbol_b, ruta_db=RUTA_DB):
+    # La IA compara dos empresas. Recibe las dos fichas, una detrás de otra,
+    # así que el verificador comprueba las cifras contra las dos a la vez.
+    # Devuelve lo mismo que explicar_empresa.
+    ficha = ficha_empresa(symbol_a, ruta_db) + "\n\n" + ficha_empresa(symbol_b, ruta_db)
+    clave = f"{symbol_a}+{symbol_b}"
+    return _explicar_con_memoria(clave, ficha, INSTRUCCIONES_COMPARAR, ruta_db)
+
+
+def _explicar_con_memoria(clave, ficha, instrucciones, ruta_db):
     # Si esta misma ficha ya se explicó, usa la explicación guardada: sale al
     # instante, no gasta llamadas y funciona aunque Gemini esté saturado.
-    ficha = ficha_empresa(symbol, ruta_db)
-    guardada = obtener_explicacion(symbol, ficha, ruta_db)
+    # Si no, la pide a Gemini y la guarda. Siempre pasa el verificador.
+    guardada = obtener_explicacion(clave, ficha, ruta_db)
     if guardada:
         texto, modelo, fecha = guardada
         modelo = f"{modelo}, guardada el {fecha:%Y-%m-%d %H:%M} UTC"
     else:
-        texto, modelo = explicar(ficha)
-        guardar_explicacion(symbol, ficha, texto, modelo, ruta_db)
+        texto, modelo = explicar(ficha, instrucciones)
+        guardar_explicacion(clave, ficha, texto, modelo, ruta_db)
     return texto, modelo, cifras_no_encontradas(texto, ficha)
 
 

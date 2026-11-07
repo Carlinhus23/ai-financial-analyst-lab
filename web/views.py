@@ -13,6 +13,7 @@ from src.financial.ratios import (
 )
 from src.formato import formatear
 from src.pipeline import (
+    comparar_empresas,
     explicar_empresa,
     listar_empresas,
     obtener_comparacion,
@@ -288,3 +289,28 @@ def metodologia(request):
         for grupo, columnas in GRUPOS_RATIOS.items()
     ]
     return render(request, "web/metodologia.html", {"grupos": grupos})
+
+
+def comparar_ia(request):
+    # La IA compara dos empresas elegidas en el formulario de Comparar
+    # (/comparar/ia/?a=AAPL&b=MSFT). Solo empresas con datos y distintas.
+    disponibles = _empresas_disponibles()
+    a = request.GET.get("a", "").upper()
+    b = request.GET.get("b", "").upper()
+    if a not in disponibles or b not in disponibles or a == b:
+        raise Http404("Elige dos empresas distintas con datos guardados.")
+
+    explicacion, modelo, dudosas = None, None, []
+    try:
+        explicacion, modelo, dudosas = comparar_empresas(a, b, _ruta_db())
+    except RuntimeError as error:
+        explicacion = f"No se pudo generar la comparación: {error}"
+
+    contexto = {
+        "a": a,
+        "b": b,
+        "explicacion": explicacion,
+        "modelo": modelo,
+        "dudosas": dudosas,
+    }
+    return render(request, "web/comparar_ia.html", contexto)

@@ -31,16 +31,31 @@ Reglas:
 - No des recomendaciones de inversión.
 - Como máximo 5 párrafos cortos, en texto plano, sin asteriscos ni listas."""
 
+# Para comparar dos empresas: recibe sus dos fichas, una detrás de otra.
+INSTRUCCIONES_COMPARAR = """Eres un analista financiero que compara, en español, dos
+empresas a partir de sus fichas, para alguien sin formación financiera.
+Reglas:
+- Usa SOLO las cifras de las fichas. No calcules cifras nuevas (ni diferencias
+  ni medias) y no inventes datos.
+- Recorre los grupos de ratios (endeudamiento, liquidez, rentabilidad...) y di
+  en cuál de las dos es mayor cada ratio en el último año, citando las dos cifras.
+- Si son de sectores distintos, dilo al principio: la comparación es más débil.
+- Si un dato aparece como "—", di que no está disponible y no lo estimes.
+- No digas cuál es mejor ni si un ratio es alto o bajo: depende del sector.
+- No des recomendaciones de inversión.
+- Como máximo 5 párrafos cortos, en texto plano, sin asteriscos ni listas."""
 
-def explicar(ficha):
-    # Recibe la ficha de la empresa (texto con las cifras ya calculadas) y
-    # devuelve la explicación de Gemini y el modelo que la ha escrito.
+
+def explicar(ficha, instrucciones=INSTRUCCIONES):
+    # Recibe la ficha (texto con las cifras ya calculadas) y devuelve la
+    # explicación de Gemini y el modelo que la ha escrito. Por defecto explica
+    # una empresa; con INSTRUCCIONES_COMPARAR, compara dos.
     clave = os.getenv("GEMINI_API_KEY")
     if not clave:
         raise RuntimeError("Falta GEMINI_API_KEY en .env (clave de Google AI Studio).")
 
     peticion = {
-        "system_instruction": {"parts": [{"text": INSTRUCCIONES}]},
+        "system_instruction": {"parts": [{"text": instrucciones}]},
         "contents": [{"role": "user", "parts": [{"text": ficha}]}],
     }
     for modelo in MODELOS:

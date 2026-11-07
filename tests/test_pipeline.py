@@ -79,7 +79,7 @@ def test_explicar_empresa_solo_envia_la_ficha(api_falsa, monkeypatch, tmp_path):
     pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
     recibido = []
 
-    def explicar_falso(ficha):
+    def explicar_falso(ficha, instrucciones=None):
         recibido.append(ficha)
         return "La deuda es el 25,0 % y sube un 99,9 %.", "gemini-x"
 
@@ -109,7 +109,7 @@ def test_la_segunda_explicacion_de_la_misma_ficha_no_llama_a_gemini(
     pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
     llamadas = []
 
-    def explicar_falso(ficha):
+    def explicar_falso(ficha, instrucciones=None):
         llamadas.append(ficha)
         return "La deuda es el 25,0 %.", "gemini-x"
 
@@ -122,3 +122,32 @@ def test_la_segunda_explicacion_de_la_misma_ficha_no_llama_a_gemini(
     assert segunda[0] == primera[0]
     assert segunda[1].startswith("gemini-x, guardada el ")
     assert segunda[2] == []  # el verificador también revisa la guardada
+
+
+def test_comparar_empresas_envia_las_dos_fichas_con_sus_instrucciones(
+    monkeypatch, tmp_path
+):
+    ruta_db = str(tmp_path / "test.duckdb")
+    fichas = {
+        "AAPL": "Deuda / activos: 2025: 25,0 %",
+        "KO": "Deuda / activos: 2025: 43,4 %",
+    }
+    monkeypatch.setattr(pipeline, "ficha_empresa", lambda s, r: fichas[s])
+    recibido = []
+
+    def explicar_falso(ficha, instrucciones):
+        recibido.append((ficha, instrucciones))
+        return "KO tiene más deuda (43,4 %) que AAPL (25,0 %), un 18,4 % más.", "x"
+
+    monkeypatch.setattr(pipeline, "explicar", explicar_falso)
+
+    texto, modelo, dudosas = pipeline.comparar_empresas("AAPL", "KO", ruta_db)
+
+    ficha, instrucciones = recibido[0]
+    assert fichas["AAPL"] in ficha and fichas["KO"] in ficha
+    assert instrucciones == pipeline.INSTRUCCIONES_COMPARAR
+    # 25,0 y 43,4 están en las fichas; 18,4 es una resta que la IA no debía hacer.
+    assert dudosas == ["18,4"]
+    # La segunda vez sale guardada (clave "AAPL+KO"), sin llamar a Gemini.
+    pipeline.comparar_empresas("AAPL", "KO", ruta_db)
+    assert len(recibido) == 1
