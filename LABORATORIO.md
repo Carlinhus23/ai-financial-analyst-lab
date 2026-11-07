@@ -62,6 +62,10 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 ## Hechas
 
 - Idea 1 · Verificador de cifras de la IA · `76bf119` · 2/5 (07-11-2026).
-  Guía: tabla de mejoras `mrvek3gz8sk.1438` (añadir una fila por mejora; ver
-  `topic.editing` para las operaciones de filas), secciones al final de la
-  pestaña. Última rev leída: 2.
+- Idea 2 · Crecimiento interanual de ventas y beneficio · `ac59c3d` · 2/5
+  (07-11-2026).
+
+Guía: tabla de mejoras `mrvek3gz8sk.4389` (cambia de id si se reescribe).
+Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
+cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
+`### N.` al final de la pestaña (insert en root, end). Última rev: 3.
