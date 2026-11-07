@@ -48,6 +48,7 @@
         <tr>
           <th>Ratio</th>
           {% for ejercicio in ejercicios %}<th>{{ ejercicio }}</th>{% endfor %}
+          <th>Evolución</th>
         </tr>
       </thead>
       <tbody>
@@ -55,6 +56,13 @@
           <tr>
             <th>{{ fila.nombre }}</th>
             {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
+            <td>
+              {% if fila.puntos %}
+                <svg class="minigrafico" viewBox="-3 -3 106 30" width="100" height="28" role="img" aria-label="Evolución de {{ fila.nombre }}">
+                  <polyline points="{{ fila.puntos }}" fill="none" stroke="currentColor" stroke-width="2" />
+                </svg>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -64,5 +72,6 @@
   <p><small>
     Fuente: {{ fuente }} · extraído (UTC): {{ extraccion|date:"Y-m-d H:i" }}.
     ROA y ROE con balance de cierre del ejercicio. "—" = no calculable.
+    Evolución: cada línea va del valor más bajo al más alto de esa fila (no compara filas entre sí).
   </small></p>
 {% endblock %}

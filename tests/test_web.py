@@ -159,3 +159,29 @@ def test_pagina_empresa_acepta_minusculas(client, db_con_aapl):
 
 def test_empresa_sin_datos_da_404(client, db_con_aapl):
     assert client.get("/empresa/MSFT/").status_code == 404
+
+
+def test_minigrafico_pone_el_minimo_abajo_y_el_maximo_arriba():
+    # 3 años en 100 px de ancho (x = 0, 50, 100) y 24 de alto (y = 24 abajo).
+    assert views._minigrafico([0.1, 0.3, 0.2]) == "0.0,24.0 50.0,0.0 100.0,12.0"
+
+
+def test_minigrafico_salta_los_años_sin_dato():
+    nan = float("nan")
+
+    assert views._minigrafico([0.1, nan, 0.3]) == "0.0,24.0 100.0,0.0"
+
+
+def test_minigrafico_vacio_si_hay_menos_de_dos_datos():
+    nan = float("nan")
+
+    assert views._minigrafico([0.5]) == ""
+    assert views._minigrafico([nan, 0.5, nan]) == ""
+
+
+def test_pagina_empresa_tiene_columna_de_evolucion(client, db_con_aapl):
+    # Con un solo ejercicio no hay línea que dibujar, pero la página no falla.
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "Evolución" in texto
+    assert "<polyline" not in texto

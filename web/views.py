@@ -1,3 +1,5 @@
+import math
+
 from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
@@ -22,6 +24,21 @@ def _empresas_disponibles():
     if not settings.RUTA_DUCKDB.exists():
         return []
     return listar_empresas(_ruta_db())
+
+
+def _minigrafico(valores, ancho=100, alto=24):
+    # Puntos "x,y" de la línea que dibuja la evolución de un ratio en un SVG.
+    # Solo es dibujo: reescala cifras ya calculadas al tamaño del gráfico
+    # (el valor más bajo abajo, el más alto arriba). Los años "—" se saltan.
+    puntos = [(i, v) for i, v in enumerate(valores) if not math.isnan(v)]
+    if len(puntos) < 2:
+        return ""
+    minimo = min(v for _, v in puntos)
+    rango = max(v for _, v in puntos) - minimo or 1
+    paso = ancho / (len(valores) - 1)
+    return " ".join(
+        f"{i * paso:.1f},{alto - (v - minimo) / rango * alto:.1f}" for i, v in puntos
+    )
 
 
 def _formatear_perfil(perfil):
@@ -66,6 +83,7 @@ def empresa(request, symbol):
         {
             "nombre": nombre,
             "valores": [formatear(columna, valor) for valor in ratios[columna]],
+            "puntos": _minigrafico(ratios[columna].tolist()),
         }
         for columna, nombre in NOMBRES_RATIOS.items()
     ]
