@@ -272,3 +272,25 @@ def test_comparar_ignora_un_orden_desconocido(client, db_con_aapl, monkeypatch):
         "/empresa/MSFT/"
     )
     assert "▼" not in respuesta.text
+
+
+def test_csv_descarga_los_ratios_listos_para_excel(client, db_con_aapl):
+    respuesta = client.get("/empresa/AAPL/csv/")
+
+    assert respuesta.status_code == 200
+    assert respuesta["Content-Type"].startswith("text/csv")
+    assert 'filename="AAPL_ratios.csv"' in respuesta["Content-Disposition"]
+    texto = respuesta.content.decode("utf-8")
+    cabecera, fila = texto.lstrip("﻿").splitlines()[:2]
+    assert texto.startswith("﻿")  # Excel lee bien las tildes
+    assert cabecera.startswith("Ejercicio;Deuda / activos;")
+    assert "0,2500" in fila  # deuda / activos = 100 / 400
+    assert "1,5000" in fila  # liquidez corriente = 150 / 100
+
+
+def test_csv_de_empresa_sin_datos_da_404(client, db_con_aapl):
+    assert client.get("/empresa/MSFT/csv/").status_code == 404
+
+
+def test_pagina_empresa_enlaza_el_csv(client, db_con_aapl):
+    assert "/empresa/AAPL/csv/" in client.get("/empresa/AAPL/").text

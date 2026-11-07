@@ -1,7 +1,7 @@
 import math
 
 from django.conf import settings
-from django.http import Http404
+from django.http import Http404, HttpResponse
 from django.shortcuts import render
 
 from src.data.sec_client import url_10k
@@ -149,6 +149,27 @@ def empresa(request, symbol):
         "dudosas": dudosas,
     }
     return render(request, "web/empresa.html", contexto)
+
+
+def empresa_csv(request, symbol):
+    # Los ratios de la empresa en un archivo CSV para abrir en Excel: una fila
+    # por ejercicio y una columna por ratio. Cifras tal cual las calcula
+    # ratios.py (porcentajes en tanto por uno: 0,25 = 25 %).
+    symbol = symbol.upper()
+    if symbol not in _empresas_disponibles():
+        raise Http404(f"No hay datos guardados de {symbol}.")
+
+    ratios = obtener_ratios([symbol], _ruta_db())
+    tabla = ratios[["fiscal_year", *NOMBRES_RATIOS]].rename(
+        columns={"fiscal_year": "Ejercicio", **NOMBRES_RATIOS}
+    )
+    # ";" y coma decimal: es lo que espera Excel en español. "﻿" al
+    # principio le dice a Excel que el texto es UTF-8 (si no, rompe las tildes).
+    texto = tabla.to_csv(index=False, sep=";", decimal=",", float_format="%.4f")
+    respuesta = HttpResponse("﻿" + texto, content_type="text/csv; charset=utf-8")
+    # "attachment": el navegador lo descarga en vez de enseñarlo.
+    respuesta["Content-Disposition"] = f'attachment; filename="{symbol}_ratios.csv"'
+    return respuesta
 
 
 def _clave_orden(fila, columna):
