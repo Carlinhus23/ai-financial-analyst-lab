@@ -123,7 +123,18 @@ Loop cada 3 min (Carlos, 07-11-2026), prioridad a la interfaz.
 - I4b · Arreglo de la 14: cifras sin partir (nowrap + columnas de 16rem;
   guía: sección 14b) · `4387832` (07-11-2026). Va con `959d2c6`.
 
-Siguiente: I8. Pendiente de mirar: en la captura a 400 px el borde derecho
+- I8 · Página actual marcada y selector de empresa (guía: mejora 18; context
+  processor `web/context_processors.py`) · `dea244e` · 3/5 (07-11-2026).
+  Depende de la 7.
+
+Cola de interfaz ampliada (07-11-2026):
+I9. Página "Metodología": todas las fórmulas (FORMULAS_RATIOS), fuentes y
+    decisiones (LLM no calcula, sin umbrales, NaN...). Enlace en el menú.
+    También resuelve que el title de las fórmulas no se ve en el móvil.
+I10. Comprobar de verdad la vista de móvil (ver pendiente de abajo).
+Después, volver a la cola de ideas (11 y 12).
+
+Siguiente: I9. Pendiente de mirar: en la captura a 400 px el borde derecho
 salía cortado; probablemente es el ancho mínimo de ventana de Edge sin
 ventana (~500 px). Comprobarlo antes de dar por buena la vista de móvil.
 Para probar algo que solo se ve al desplazarse: copiar la página con curl al
@@ -136,8 +147,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.54763` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.57408` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 28.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 30.
