@@ -23,6 +23,7 @@ from src.database.duckdb_manager import (
 )
 from src.financial.ratios import (
     NOMBRES_RATIOS,
+    calcular_crecimiento,
     calcular_per,
     calcular_ratios_balance,
     calcular_ratios_flujos_caja,
@@ -72,6 +73,7 @@ def obtener_ratios(symbols=None, ruta_db=RUTA_DB):
     df = calcular_ratios_balance(df)
     df = calcular_ratios_rentabilidad(df)
     df = calcular_ratios_flujos_caja(df)
+    df = calcular_crecimiento(df)
     return df
 
 

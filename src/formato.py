@@ -12,6 +12,8 @@ RATIOS_EN_PORCENTAJE = {
     "roa",
     "roe",
     "margen_fcf",
+    "crecimiento_ventas",
+    "crecimiento_beneficio",
 }
 
 

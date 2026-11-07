@@ -20,6 +20,8 @@ NOMBRES_RATIOS = {
     "roe": "ROE",
     "margen_fcf": "Margen FCF",
     "calidad_beneficio": "Calidad del beneficio",
+    "crecimiento_ventas": "Crecimiento de ventas",
+    "crecimiento_beneficio": "Crecimiento del beneficio",
 }
 
 
@@ -148,6 +150,36 @@ def calcular_calidad_beneficio(df):
     df_resultado["calidad_beneficio"] = _dividir_si_positivo(
         df_resultado["operating_cash_flow"],
         df_resultado["net_income"],
+    )
+    return df_resultado
+
+
+# --- Crecimiento interanual ---
+
+
+def calcular_crecimiento(df):
+    # Variación respecto al ejercicio anterior de la MISMA empresa (los datos
+    # llegan ordenados por symbol y date). Es NaN si no hay año anterior justo
+    # (el primero de cada empresa, o si falta un año en medio) y, en el
+    # beneficio, si el anterior es <= 0: de pérdidas a ganancias el % no
+    # significa nada.
+    df_resultado = df.copy()
+    anterior = df_resultado.groupby("symbol")[
+        ["fiscal_year", "revenue", "net_income"]
+    ].shift(1)
+    seguido = (
+        df_resultado["fiscal_year"].astype(float)
+        - anterior["fiscal_year"].astype(float)
+        == 1
+    )
+    ventas_antes = anterior["revenue"].where(seguido)
+    beneficio_antes = anterior["net_income"].where(seguido)
+
+    df_resultado["crecimiento_ventas"] = _dividir(
+        df_resultado["revenue"] - ventas_antes, ventas_antes
+    )
+    df_resultado["crecimiento_beneficio"] = _dividir_si_positivo(
+        df_resultado["net_income"] - beneficio_antes, beneficio_antes
     )
     return df_resultado
 

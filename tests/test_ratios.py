@@ -5,6 +5,7 @@ import pytest
 
 from src.financial.ratios import (
     calcular_calidad_beneficio,
+    calcular_crecimiento,
     calcular_deuda_sobre_activos,
     calcular_deuda_sobre_patrimonio,
     calcular_liquidez_corriente,
@@ -283,3 +284,43 @@ def test_per_nan_si_beneficio_cero_negativo_o_vacio():
     assert math.isnan(calcular_per(2400, 0))
     assert math.isnan(calcular_per(2400, -50))
     assert math.isnan(calcular_per(2400, float("nan")))
+
+
+def test_crecimiento_compara_con_el_año_anterior_de_la_misma_empresa():
+    datos = pd.DataFrame(
+        {
+            "symbol": ["AAPL", "AAPL", "KO", "KO"],
+            "fiscal_year": ["2024", "2025", "2024", "2025"],
+            "revenue": [100, 110, 50, 40],
+            "net_income": [20, 30, 10, 5],
+        }
+    )
+
+    resultado = calcular_crecimiento(datos)
+
+    # El primer año de cada empresa no tiene anterior: KO no se compara con AAPL.
+    assert math.isnan(resultado["crecimiento_ventas"][0])
+    assert math.isnan(resultado["crecimiento_ventas"][2])
+    assert resultado["crecimiento_ventas"][1] == pytest.approx(0.10)
+    assert resultado["crecimiento_ventas"][3] == pytest.approx(-0.20)
+    assert resultado["crecimiento_beneficio"][1] == pytest.approx(0.50)
+    assert resultado["crecimiento_beneficio"][3] == pytest.approx(-0.50)
+
+
+def test_crecimiento_nan_si_falta_un_año_o_venia_de_perdidas():
+    datos = pd.DataFrame(
+        {
+            "symbol": ["GE", "GE", "GE"],
+            "fiscal_year": ["2021", "2023", "2024"],
+            "revenue": [100, 120, 130],
+            "net_income": [10, -5, 8],
+        }
+    )
+
+    resultado = calcular_crecimiento(datos)
+
+    # 2023 no se compara con 2021 (falta 2022): sería crecimiento de dos años.
+    assert math.isnan(resultado["crecimiento_ventas"][1])
+    # 2024 sí tiene ventas de 2023, pero en 2023 hubo pérdidas: % sin sentido.
+    assert resultado["crecimiento_ventas"][2] == pytest.approx(130 / 120 - 1)
+    assert math.isnan(resultado["crecimiento_beneficio"][2])
