@@ -230,3 +230,45 @@ def test_pagina_empresa_enlaza_los_10k_de_la_sec(client, db_con_aapl):
 
     assert "ver los 10-K originales en la SEC" in texto
     assert "browse-edgar?action=getcompany&amp;CIK=AAPL&amp;type=10-K" in texto
+
+
+def _empresas_falsas(monkeypatch, pers):
+    # Empresas del mismo sector con estos PER y el resto de ratios vacíos.
+    datos = []
+    for symbol, per in pers.items():
+        fila = {columna: float("nan") for columna in views.NOMBRES_RATIOS}
+        datos.append(
+            {
+                **fila,
+                "symbol": symbol,
+                "sector": "Tech",
+                "fiscal_year": "2025",
+                "per": per,
+            }
+        )
+    monkeypatch.setattr(views, "obtener_comparacion", lambda ruta: datos)
+
+
+def test_comparar_ordena_de_mayor_a_menor_con_los_vacios_al_final(
+    client, db_con_aapl, monkeypatch
+):
+    _empresas_falsas(monkeypatch, {"AAPL": 20.0, "NVDA": float("nan"), "MSFT": 30.0})
+
+    texto = client.get("/comparar/?orden=per").text
+
+    posiciones = [texto.index(f"/empresa/{s}/") for s in ["MSFT", "AAPL", "NVDA"]]
+    assert posiciones == sorted(posiciones)
+    assert texto.index("/empresa/NVDA/") < texto.index("<em>Mediana</em>")
+    assert "PER</a> ▼" in texto
+
+
+def test_comparar_ignora_un_orden_desconocido(client, db_con_aapl, monkeypatch):
+    _empresas_falsas(monkeypatch, {"AAPL": 20.0, "MSFT": 30.0})
+
+    respuesta = client.get("/comparar/?orden=no_existe")
+
+    assert respuesta.status_code == 200
+    assert respuesta.text.index("/empresa/AAPL/") < respuesta.text.index(
+        "/empresa/MSFT/"
+    )
+    assert "▼" not in respuesta.text

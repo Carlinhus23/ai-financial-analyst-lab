@@ -151,11 +151,25 @@ def empresa(request, symbol):
     return render(request, "web/empresa.html", contexto)
 
 
+def _clave_orden(fila, columna):
+    # Para sorted(): primero el sector; dentro, los que tienen dato antes que
+    # los "—" (False va antes que True), y de mayor a menor (por eso el "-").
+    valor = fila[columna]
+    vacio = math.isnan(valor)
+    return (fila["sector"], vacio, 0 if vacio else -valor)
+
+
 def comparar(request):
     # Una fila por empresa (su último ejercicio) y una columna por ratio.
     columnas = {"per": "PER", **NOMBRES_RATIOS}
     datos = obtener_comparacion(_ruta_db()) if _empresas_disponibles() else []
     medianas = calcular_medianas_sector(datos, list(columnas))
+
+    # ?orden=roe: dentro de cada sector, de mayor a menor ROE (los "—" al
+    # final). Se ordena sin salir del sector para que la mediana siga debajo.
+    orden = request.GET.get("orden")
+    if orden in columnas:
+        datos = sorted(datos, key=lambda fila: _clave_orden(fila, orden))
 
     # Las empresas llegan ordenadas por sector: al acabar cada sector que
     # tenga mediana, se añade su fila "Mediana del sector".
@@ -186,5 +200,5 @@ def comparar(request):
     return render(
         request,
         "web/comparar.html",
-        {"columnas": columnas.values(), "filas": filas},
+        {"columnas": columnas.items(), "filas": filas, "orden": orden},
     )

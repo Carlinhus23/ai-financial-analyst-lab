@@ -11,10 +11,12 @@
       <table>
         <thead>
           <tr>
-            <th>Empresa</th>
+            <th><a href="?">Empresa</a></th>
             <th>Sector</th>
             <th>Ejercicio</th>
-            {% for columna in columnas %}<th>{{ columna }}</th>{% endfor %}
+            {% for clave, nombre in columnas %}
+              <th><a href="?orden={{ clave }}">{{ nombre }}</a>{% if clave == orden %} ▼{% endif %}</th>
+            {% endfor %}
           </tr>
         </thead>
         <tbody>
@@ -42,6 +44,7 @@
     <p><small>
       Cada empresa cierra su ejercicio en una fecha distinta (Apple en septiembre, Microsoft en junio...).
       PER con la cotización más reciente descargada. "—" = no calculable.
+      Pulsa en un ratio para ordenar cada sector de mayor a menor (no significa "mejor": una deuda mayor no es mejor); en "Empresa", para volver al orden inicial.
       Mediana: el valor del medio dentro del sector (solo en sectores con 2 o más empresas); sirve de referencia, no de umbral.
     </small></p>
   {% else %}
