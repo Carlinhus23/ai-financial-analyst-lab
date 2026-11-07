@@ -8,6 +8,7 @@ from src.financial.ratios import (
     calcular_crecimiento,
     calcular_deuda_sobre_activos,
     calcular_deuda_sobre_patrimonio,
+    calcular_dias_inventario,
     calcular_liquidez_corriente,
     calcular_margen_fcf,
     calcular_margenes,
@@ -20,6 +21,7 @@ from src.financial.ratios import (
     calcular_ratios_rentabilidad,
     calcular_roa,
     calcular_roe,
+    calcular_rotacion_activos,
 )
 
 
@@ -220,12 +222,21 @@ def test_ratios_rentabilidad_anade_todos():
             "net_income": [30],
             "total_assets": [300],
             "total_stockholders_equity": [150],
+            "inventory": [12],
         }
     )
 
     resultado = calcular_ratios_rentabilidad(datos)
 
-    for columna in ["margen_bruto", "margen_operativo", "margen_neto", "roa", "roe"]:
+    for columna in [
+        "margen_bruto",
+        "margen_operativo",
+        "margen_neto",
+        "roa",
+        "roe",
+        "rotacion_activos",
+        "dias_inventario",
+    ]:
         assert columna in resultado.columns
     assert "roa" not in datos.columns
 
@@ -356,3 +367,29 @@ def test_sin_mediana_si_el_sector_tiene_una_empresa_o_no_se_sabe():
 
 def test_mediana_sin_empresas_no_falla():
     assert calcular_medianas_sector([], ["roe"]) == {}
+
+
+def test_rotacion_activos_es_ventas_entre_activo():
+    datos = pd.DataFrame({"revenue": [200, 50], "total_assets": [400, 0]})
+
+    resultado = calcular_rotacion_activos(datos)["rotacion_activos"]
+
+    assert resultado[0] == pytest.approx(0.5)
+    assert math.isnan(resultado[1])  # activo 0
+
+
+def test_dias_inventario_con_coste_de_ventas_de_ventas_menos_bruto():
+    nan = float("nan")
+    datos = pd.DataFrame(
+        {
+            "inventory": [30, nan, 30],
+            "revenue": [500, 500, 500],
+            "gross_profit": [135, 135, nan],
+        }
+    )
+
+    resultado = calcular_dias_inventario(datos)["dias_inventario"]
+
+    assert resultado[0] == pytest.approx(30 / (500 - 135) * 365)  # = 30 días
+    assert math.isnan(resultado[1])  # sin inventario (como Google)
+    assert math.isnan(resultado[2])  # sin beneficio bruto (como Exxon)

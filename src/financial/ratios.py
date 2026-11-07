@@ -19,6 +19,8 @@ NOMBRES_RATIOS = {
     "margen_neto": "Margen neto",
     "roa": "ROA",
     "roe": "ROE",
+    "rotacion_activos": "Rotación de activos",
+    "dias_inventario": "Días de inventario",
     "margen_fcf": "Margen FCF",
     "calidad_beneficio": "Calidad del beneficio",
     "crecimiento_ventas": "Crecimiento de ventas",
@@ -118,6 +120,32 @@ def calcular_roe(df):
     df_resultado["roe"] = _dividir_si_positivo(
         df_resultado["net_income"],
         df_resultado["total_stockholders_equity"],
+    )
+    return df_resultado
+
+
+# --- Eficiencia ---
+
+
+def calcular_rotacion_activos(df):
+    # Ventas por cada dólar de activo: cuánto vende la empresa con lo que
+    # tiene. Con el activo de cierre, como ROA y ROE.
+    df_resultado = df.copy()
+    df_resultado["rotacion_activos"] = _dividir(
+        df_resultado["revenue"],
+        df_resultado["total_assets"],
+    )
+    return df_resultado
+
+
+def calcular_dias_inventario(df):
+    # Días que tarda en venderse el inventario: inventario / coste de ventas
+    # x 365. Coste de ventas = ventas - beneficio bruto. Sin beneficio bruto
+    # (Exxon) o sin inventario (Google) queda NaN; con coste <= 0, también.
+    df_resultado = df.copy()
+    coste_ventas = df_resultado["revenue"] - df_resultado["gross_profit"]
+    df_resultado["dias_inventario"] = (
+        _dividir_si_positivo(df_resultado["inventory"], coste_ventas) * 365
     )
     return df_resultado
 
@@ -240,7 +268,16 @@ def calcular_ratios_balance(df):
 
 def calcular_ratios_rentabilidad(df):
     # Necesita balance y cuenta de resultados unidos (ver obtener_datos_analisis).
-    return _aplicar(df, [calcular_margenes, calcular_roa, calcular_roe])
+    return _aplicar(
+        df,
+        [
+            calcular_margenes,
+            calcular_roa,
+            calcular_roe,
+            calcular_rotacion_activos,
+            calcular_dias_inventario,
+        ],
+    )
 
 
 def calcular_ratios_flujos_caja(df):
