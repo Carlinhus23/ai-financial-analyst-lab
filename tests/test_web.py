@@ -350,3 +350,12 @@ def test_comparar_usa_la_tabla_con_cabecera_y_columna_fijas(client, db_con_aapl)
 
     assert '<div class="tabla tabla-fija">' in texto
     assert '<tr id="AAPL">' in texto  # /comparar/#AAPL lleva a su fila
+
+
+def test_el_boton_de_ia_muestra_que_esta_esperando(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    boton = texto[texto.index('<a href="?explicar=1"') :]
+    boton = boton[: boton.index("</a>")]
+    assert "aria-busy" in boton  # Pico pinta el círculo de espera
+    assert "La IA está escribiendo" in boton

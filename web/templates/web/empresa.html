@@ -49,7 +49,8 @@
       </footer>
     </article>
   {% else %}
-    <p><a href="?explicar=1" role="button">Explicar con IA</a> <small>(tarda unos segundos)</small></p>
+    {# Al pulsar: aria-busy hace que Pico muestre un círculo girando mientras llega la respuesta. #}
+    <p><a href="?explicar=1" role="button" onclick="this.setAttribute('aria-busy', 'true'); this.textContent = 'La IA está escribiendo…';">Explicar con IA</a> <small>(tarda unos segundos)</small></p>
   {% endif %}
 
   <div class="tabla">
