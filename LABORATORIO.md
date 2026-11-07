@@ -64,8 +64,11 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 - Idea 1 · Verificador de cifras de la IA · `76bf119` · 2/5 (07-11-2026).
 - Idea 2 · Crecimiento interanual de ventas y beneficio · `ac59c3d` · 2/5
   (07-11-2026).
+- Idea 3 · Minigráficos SVG de evolución (sin Chart.js: sería dependencia
+  nueva; si Carlos quiere gráficos grandes, preguntarle) · `2531b5d` · 3/5
+  (07-11-2026).
 
-Guía: tabla de mejoras `mrvek3gz8sk.4389` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.7238` (cambia de id si se reescribe).
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 3.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 4.
