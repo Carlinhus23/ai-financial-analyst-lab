@@ -74,10 +74,13 @@ pestañas de la guía y poner la decisión "Ya en el principal".
   (07-11-2026). Pendiente (preguntar a Carlos): enlace al 10-K de cada año,
   guardando el `accn` en una columna nueva (hay que regenerar la base).
 
-Loop parado por Carlos el 07-11-2026 tras la idea 6. Siguiente: idea 7.
+- Idea 7 · Ordenar Comparar por un ratio, dentro de cada sector · `b257cd6` ·
+  2/5 (07-11-2026). Depende de la 5.
 
-Guía: tabla de mejoras `mrvek3gz8sk.16862` (cambia de id si se reescribe).
+Loop reanudado por Carlos el 07-11-2026. Siguiente: idea 8.
+
+Guía: tabla de mejoras `mrvek3gz8sk.19372` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 9.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 11.
