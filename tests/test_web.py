@@ -223,3 +223,10 @@ def test_pagina_empresa_tiene_columna_de_evolucion(client, db_con_aapl):
 
     assert "Evolución" in texto
     assert "<polyline" not in texto
+
+
+def test_pagina_empresa_enlaza_los_10k_de_la_sec(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "ver los 10-K originales en la SEC" in texto
+    assert "browse-edgar?action=getcompany&amp;CIK=AAPL&amp;type=10-K" in texto

@@ -145,3 +145,15 @@ def test_sin_user_agent_avisa(monkeypatch):
 
     with pytest.raises(RuntimeError, match="SEC_USER_AGENT"):
         sec_client._get_json(sec_client.URL_TICKERS)
+
+
+def test_url_10k_usa_el_ticker():
+    url = sec_client.url_10k("AAPL")
+
+    assert "CIK=AAPL" in url
+    assert "type=10-K" in url
+
+
+def test_url_10k_de_exxon_usa_su_cik_manual():
+    # El ticker XOM ya apunta a la holding nueva, que aún no tiene 10-K.
+    assert "CIK=0000034088" in sec_client.url_10k("XOM")

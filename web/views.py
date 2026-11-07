@@ -4,6 +4,7 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
 
+from src.data.sec_client import url_10k
 from src.financial.ratios import NOMBRES_RATIOS, calcular_medianas_sector
 from src.formato import formatear
 from src.pipeline import (
@@ -140,6 +141,7 @@ def empresa(request, symbol):
         "filas": filas,
         "estados": estados,
         "fuente": ratios["fuente"].iloc[0],
+        "url_10k": url_10k(symbol),
         "extraccion": ratios["fecha_extraccion_utc"].max(),
         "perfil": _formatear_perfil(perfil) if perfil else None,
         "explicacion": explicacion,

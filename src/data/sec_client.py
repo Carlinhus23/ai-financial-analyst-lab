@@ -14,6 +14,12 @@ load_dotenv()
 
 URL_TICKERS = "https://www.sec.gov/files/company_tickers.json"
 URL_HECHOS = "https://data.sec.gov/api/xbrl/companyfacts/CIK{cik}.json"
+# Página pública de EDGAR con las cuentas anuales (10-K) de una empresa.
+# Acepta el ticker o el CIK.
+URL_LISTA_10K = (
+    "https://www.sec.gov/cgi-bin/browse-edgar"
+    "?action=getcompany&CIK={empresa}&type=10-K&dateb=&owner=include&count=40"
+)
 
 # Cada partida y las etiquetas XBRL (us-gaap) que la representan, por orden de
 # preferencia: cada año vale la primera que tenga dato. Hacen falta varias
@@ -71,6 +77,13 @@ VACIO = float("nan")
 # presentado ninguna cuenta anual: sus 10-K siguen en la sociedad anterior.
 # Se puede quitar cuando la holding presente su primer 10-K.
 CIKS_MANUALES = {"XOM": "0000034088"}
+
+
+def url_10k(symbol):
+    # Enlace a los 10-K originales de la empresa en la SEC, para que cualquiera
+    # pueda comprobar de dónde salen las cifras. No llama a internet. Con el
+    # CIK manual si lo hay (Exxon: el ticker ya apunta a la holding nueva).
+    return URL_LISTA_10K.format(empresa=CIKS_MANUALES.get(symbol, symbol))
 
 
 def _get_json(url):
