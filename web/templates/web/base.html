@@ -6,13 +6,17 @@
   <title>{% block titulo %}AI Financial Analyst{% endblock %}</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.0.6/css/pico.classless.min.css">
   <style>
-    td { text-align: right; font-variant-numeric: tabular-nums; }
+    /* Las cifras nunca se parten ("34,0 %" en una línea, también en el móvil). */
+    td { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    /* Móvil: el menú baja a una segunda línea en vez de salirse de la pantalla. */
+    nav { flex-wrap: wrap; }
+    nav ul:first-child a { white-space: nowrap; }
     .tabla { overflow-x: auto; }
     /* Selector del menú: compacto, a la altura de los enlaces. */
     nav select { margin: 0; padding-block: 0.35rem; width: auto; }
     nav a[aria-current="page"] { font-weight: bold; text-decoration: underline; }
     /* Metodología: las fórmulas van como texto normal, alineadas a la izquierda. */
-    td.formula { text-align: left; }
+    td.formula { text-align: left; white-space: normal; }
     /* Comparar: la tabla tiene su propia zona de desplazamiento y, al moverse
        por ella, la fila de títulos (arriba) y la columna de empresas (a la
        izquierda) se quedan fijas. El fondo tapa lo que pasa por debajo. */
