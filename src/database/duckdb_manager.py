@@ -1,3 +1,5 @@
+from datetime import UTC, datetime
+
 import duckdb
 
 RUTA_DB = "ai_financial_analyst.duckdb"
@@ -123,3 +125,43 @@ def obtener_empresas(ruta_db=RUTA_DB):
             # Aún no existe alguna de las tablas: no hay empresas que analizar.
             return []
     return [fila[0] for fila in filas]
+
+
+# Explicaciones de la IA ya pedidas, para no repetir la llamada a Gemini. La
+# clave es la ficha exacta: si cambia una sola cifra (p. ej. el PER con el
+# precio de otro día), es otra ficha y hace falta otra explicación.
+CREAR_EXPLICACIONES = """
+    CREATE TABLE IF NOT EXISTS ai_explanation (
+        symbol VARCHAR,
+        ficha VARCHAR,
+        texto VARCHAR,
+        modelo VARCHAR,
+        fecha_utc TIMESTAMP
+    )
+"""
+
+
+def guardar_explicacion(symbol, ficha, texto, modelo, ruta_db=RUTA_DB):
+    ahora = datetime.now(UTC).replace(tzinfo=None)
+    with duckdb.connect(ruta_db) as conexion:
+        conexion.execute(CREAR_EXPLICACIONES)
+        conexion.execute(
+            "INSERT INTO ai_explanation VALUES (?, ?, ?, ?, ?)",
+            [symbol, ficha, texto, modelo, ahora],
+        )
+
+
+def obtener_explicacion(symbol, ficha, ruta_db=RUTA_DB):
+    # (texto, modelo, fecha_utc) de la última explicación de esa misma ficha,
+    # o None si nunca se ha pedido.
+    with duckdb.connect(ruta_db) as conexion:
+        conexion.execute(CREAR_EXPLICACIONES)
+        return conexion.execute(
+            """
+            SELECT texto, modelo, fecha_utc FROM ai_explanation
+            WHERE symbol = ? AND ficha = ?
+            ORDER BY fecha_utc DESC
+            LIMIT 1
+            """,
+            [symbol, ficha],
+        ).fetchone()

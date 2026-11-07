@@ -17,9 +17,11 @@ from src.data.yahoo_client import get_profile
 from src.database.duckdb_manager import (
     RUTA_DB,
     guardar_estado,
+    guardar_explicacion,
     obtener_datos_analisis,
     obtener_empresas,
     obtener_estado,
+    obtener_explicacion,
 )
 from src.financial.ratios import (
     NOMBRES_RATIOS,
@@ -136,8 +138,16 @@ def explicar_empresa(symbol, ruta_db=RUTA_DB):
     # La IA explica la ficha de la empresa. Llama a Gemini: tarda unos segundos.
     # Devuelve (explicación, modelo que la ha escrito, cifras que la IA ha
     # escrito y no están en la ficha; vacía si todo cuadra).
+    # Si esta misma ficha ya se explicó, usa la explicación guardada: sale al
+    # instante, no gasta llamadas y funciona aunque Gemini esté saturado.
     ficha = ficha_empresa(symbol, ruta_db)
-    texto, modelo = explicar(ficha)
+    guardada = obtener_explicacion(symbol, ficha, ruta_db)
+    if guardada:
+        texto, modelo, fecha = guardada
+        modelo = f"{modelo}, guardada el {fecha:%Y-%m-%d %H:%M} UTC"
+    else:
+        texto, modelo = explicar(ficha)
+        guardar_explicacion(symbol, ficha, texto, modelo, ruta_db)
     return texto, modelo, cifras_no_encontradas(texto, ficha)
 
 

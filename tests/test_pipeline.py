@@ -100,3 +100,25 @@ def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):
         pipeline.actualizar_empresa("AAPL", num_periodos=5, ruta_db=ruta_db)
 
     assert not (tmp_path / "test.duckdb").exists()
+
+
+def test_la_segunda_explicacion_de_la_misma_ficha_no_llama_a_gemini(
+    api_falsa, monkeypatch, tmp_path
+):
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+    llamadas = []
+
+    def explicar_falso(ficha):
+        llamadas.append(ficha)
+        return "La deuda es el 25,0 %.", "gemini-x"
+
+    monkeypatch.setattr(pipeline, "explicar", explicar_falso)
+
+    primera = pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+    segunda = pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+
+    assert len(llamadas) == 1
+    assert segunda[0] == primera[0]
+    assert segunda[1].startswith("gemini-x, guardada el ")
+    assert segunda[2] == []  # el verificador también revisa la guardada

@@ -3,8 +3,10 @@ import pytest
 
 from src.database.duckdb_manager import (
     guardar_estado,
+    guardar_explicacion,
     obtener_datos_analisis,
     obtener_estado,
+    obtener_explicacion,
 )
 
 
@@ -153,3 +155,26 @@ def test_datos_analisis_filtra_por_symbols(ruta_db):
     df = obtener_datos_analisis(symbols=["KO", "AAPL"], ruta_db=ruta_db)
 
     assert df["symbol"].tolist() == ["AAPL", "KO"]
+
+
+def test_guarda_y_recupera_la_explicacion_de_una_ficha(ruta_db):
+    guardar_explicacion("AAPL", "ficha A", "La deuda baja.", "gemini-x", ruta_db)
+
+    texto, modelo, fecha = obtener_explicacion("AAPL", "ficha A", ruta_db)
+
+    assert (texto, modelo) == ("La deuda baja.", "gemini-x")
+    assert fecha is not None
+
+
+def test_otra_ficha_u_otra_empresa_no_tiene_explicacion(ruta_db):
+    guardar_explicacion("AAPL", "ficha A", "La deuda baja.", "gemini-x", ruta_db)
+
+    assert obtener_explicacion("AAPL", "ficha B", ruta_db) is None
+    assert obtener_explicacion("MSFT", "ficha A", ruta_db) is None
+
+
+def test_con_dos_explicaciones_de_la_misma_ficha_vale_la_ultima(ruta_db):
+    guardar_explicacion("AAPL", "ficha A", "Primera.", "gemini-x", ruta_db)
+    guardar_explicacion("AAPL", "ficha A", "Segunda.", "gemini-x", ruta_db)
+
+    assert obtener_explicacion("AAPL", "ficha A", ruta_db)[0] == "Segunda."
