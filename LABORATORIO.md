@@ -61,4 +61,7 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 
 ## Hechas
 
-(ninguna todavía)
+- Idea 1 · Verificador de cifras de la IA · `76bf119` · 2/5 (07-11-2026).
+  Guía: tabla de mejoras `mrvek3gz8sk.1438` (añadir una fila por mejora; ver
+  `topic.editing` para las operaciones de filas), secciones al final de la
+  pestaña. Última rev leída: 2.
