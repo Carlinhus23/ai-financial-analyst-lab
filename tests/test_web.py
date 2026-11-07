@@ -329,3 +329,17 @@ def test_el_nombre_de_cada_ratio_lleva_su_formula(client, db_con_aapl):
 
     assert '<abbr title="Deuda financiera total / activo total">' in texto
     assert texto.count("<abbr title=") == len(views.NOMBRES_RATIOS)
+
+
+def test_signo_verde_si_sube_rojo_si_baja_y_nada_sin_dato():
+    assert views._signo(0.12) == "sube"
+    assert views._signo(-0.05) == "baja"
+    assert views._signo(0) == ""
+    assert views._signo(float("nan")) == ""
+
+
+def test_solo_las_variaciones_llevan_color(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert '<span class="baja">-0,15 %</span>' in texto  # variación del día
+    assert "<td>25,0 %</td>" in texto  # deuda / activos: sin color

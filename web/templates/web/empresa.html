@@ -14,7 +14,7 @@
         <div>
           <small>Precio</small>
           <strong>{{ perfil.precio }} {{ perfil.moneda }}</strong>
-          <small>{{ perfil.variacion }} en la sesión</small>
+          <small><span class="{{ perfil.signo_variacion }}">{{ perfil.variacion }}</span> en la sesión</small>
         </div>
         <div>
           <small>Capitalización</small>
@@ -67,7 +67,7 @@
           {% for fila in grupo.filas %}
             <tr>
               <th><abbr title="{{ fila.formula }}">{{ fila.nombre }}</abbr></th>
-              {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
+              {% for texto, clase in fila.valores %}<td{% if clase %} class="{{ clase }}"{% endif %}>{{ texto }}</td>{% endfor %}
               <td>
                 {% if fila.puntos %}
                   <svg class="minigrafico" viewBox="-3 -3 106 30" width="100" height="28" role="img" aria-label="Evolución de {{ fila.nombre }}">

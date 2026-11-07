@@ -15,7 +15,7 @@
           <dl>
             <dt>Precio</dt><dd>{{ t.precio }}</dd>
             <dt>PER</dt><dd>{{ t.per }}</dd>
-            <dt>Ventas {{ t.ejercicio }}</dt><dd>{{ t.crecimiento }}</dd>
+            <dt>Ventas {{ t.ejercicio }}</dt><dd class="{{ t.signo }}">{{ t.crecimiento }}</dd>
           </dl>
         </article>
       {% endfor %}

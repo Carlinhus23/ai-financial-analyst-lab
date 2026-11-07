@@ -8,6 +8,10 @@
   <style>
     td { text-align: right; font-variant-numeric: tabular-nums; }
     .tabla { overflow-x: auto; }
+    /* Solo para variaciones (sesión, crecimiento): verde si sube, rojo si baja.
+       Son los colores de Pico, así que también valen en modo oscuro. */
+    .sube { color: var(--pico-ins-color); }
+    .baja { color: var(--pico-del-color); }
     /* Cifras destacadas de la empresa: etiqueta pequeña encima, número grande. */
     .cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
     .cifras div { display: flex; flex-direction: column; }

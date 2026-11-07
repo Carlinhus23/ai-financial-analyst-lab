@@ -81,6 +81,20 @@ def _minigrafico(valores, ancho=100, alto=24):
     )
 
 
+# Ratios que son variaciones (suben o bajan respecto al año anterior): solo
+# estos llevan color. Un ratio normal no se colorea, porque si es "bueno" o
+# "malo" depende del sector.
+COLUMNAS_CON_SIGNO = {"crecimiento_ventas", "crecimiento_beneficio"}
+
+
+def _signo(valor):
+    # Clase CSS según el signo de una variación: "sube" (verde) o "baja"
+    # (rojo). Sin dato o exactamente 0, sin color.
+    if valor is None or math.isnan(valor) or valor == 0:
+        return ""
+    return "sube" if valor > 0 else "baja"
+
+
 def _formatear_perfil(perfil):
     # Solo presentación: el PER ya llega calculado desde src/.
     return {
@@ -90,6 +104,7 @@ def _formatear_perfil(perfil):
         "moneda": perfil["currency"],
         "precio": formatear("precio", perfil["price"]),
         "variacion": f"{perfil['change_percentage']:+.2f} %".replace(".", ","),
+        "signo_variacion": _signo(perfil["change_percentage"]),
         "capitalizacion": f"{_millones(perfil['market_cap'])} M",
         "per": formatear("per", perfil["per"]),
         "fecha": perfil["date"],
@@ -108,6 +123,7 @@ def inicio(request):
             "precio": f"{formatear('precio', fila['precio'])} {fila['moneda']}",
             "per": formatear("per", fila["per"]),
             "crecimiento": formatear("crecimiento_ventas", fila["crecimiento_ventas"]),
+            "signo": _signo(fila["crecimiento_ventas"]),
             "ejercicio": fila["fiscal_year"],
         }
         for fila in datos
@@ -141,7 +157,14 @@ def empresa(request, symbol):
                 {
                     "nombre": NOMBRES_RATIOS[columna],
                     "formula": FORMULAS_RATIOS[columna],
-                    "valores": [formatear(columna, v) for v in ratios[columna]],
+                    # (texto, clase de color): color solo en las variaciones.
+                    "valores": [
+                        (
+                            formatear(columna, v),
+                            _signo(v) if columna in COLUMNAS_CON_SIGNO else "",
+                        )
+                        for v in ratios[columna]
+                    ],
                     "puntos": _minigrafico(ratios[columna].tolist()),
                 }
                 for columna in columnas
