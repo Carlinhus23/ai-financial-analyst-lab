@@ -379,3 +379,18 @@ def test_sin_base_de_datos_no_hay_selector(client, tmp_path, settings):
     settings.RUTA_DUCKDB = tmp_path / "no_existe.duckdb"
 
     assert "Ir a una empresa" not in client.get("/").text
+
+
+def test_metodologia_muestra_todas_las_formulas(client, db_con_aapl):
+    texto = client.get("/metodologia/").text
+
+    for formula in views.FORMULAS_RATIOS.values():
+        assert formula in texto
+    assert "Capitalización actual / beneficio neto" in texto  # PER
+    assert 'aria-current="page">Metodología</a>' in texto
+
+
+def test_metodologia_funciona_sin_base_de_datos(client, tmp_path, settings):
+    settings.RUTA_DUCKDB = tmp_path / "no_existe.duckdb"
+
+    assert client.get("/metodologia/").status_code == 200

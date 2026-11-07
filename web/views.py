@@ -274,3 +274,17 @@ def comparar(request):
         "web/comparar.html",
         {"columnas": columnas.items(), "filas": filas, "orden": orden},
     )
+
+
+def metodologia(request):
+    # Cómo se calcula todo, para quien quiera comprobarlo. Las fórmulas salen
+    # de FORMULAS_RATIOS (las mismas que se ven al pasar el ratón): no se
+    # escriben dos veces.
+    grupos = [
+        {
+            "nombre": grupo,
+            "ratios": [(NOMBRES_RATIOS[c], FORMULAS_RATIOS[c]) for c in columnas],
+        }
+        for grupo, columnas in GRUPOS_RATIOS.items()
+    ]
+    return render(request, "web/metodologia.html", {"grupos": grupos})

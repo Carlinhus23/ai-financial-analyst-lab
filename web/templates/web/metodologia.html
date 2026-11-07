@@ -1,0 +1,42 @@
+{% extends "web/base.html" %}
+
+{% block titulo %}Metodología · AI Financial Analyst{% endblock %}
+
+{% block contenido %}
+  <h1>Metodología</h1>
+  <p>Cómo se obtienen y se calculan todas las cifras de esta web.</p>
+
+  <h2>Fuentes</h2>
+  <ul>
+    <li><strong>Estados financieros:</strong> cuentas anuales oficiales (formulario 10-K) presentadas a la SEC de EE. UU., en su versión XBRL (SEC EDGAR). Cinco ejercicios por empresa.</li>
+    <li><strong>Cotización, capitalización y sector:</strong> Yahoo Finance, el día de la última descarga.</li>
+  </ul>
+
+  <h2>Fórmulas de los ratios</h2>
+  <p>Todas las calcula Python con estas fórmulas, que están probadas con tests. Se usa el balance de cierre de cada ejercicio, sin promediar.</p>
+  <div class="tabla">
+    <table>
+      <thead><tr><th>Ratio</th><th>Fórmula</th></tr></thead>
+      {% for grupo in grupos %}
+        <tbody>
+          <tr class="grupo"><th colspan="2">{{ grupo.nombre }}</th></tr>
+          {% for nombre, formula in grupo.ratios %}
+            <tr><th>{{ nombre }}</th><td class="formula">{{ formula }}</td></tr>
+          {% endfor %}
+        </tbody>
+      {% endfor %}
+      <tbody>
+        <tr class="grupo"><th colspan="2">Valoración</th></tr>
+        <tr><th>PER</th><td class="formula">Capitalización actual / beneficio neto del último ejercicio (— si el beneficio es ≤ 0)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Decisiones</h2>
+  <ul>
+    <li><strong>"—" significa "no calculable".</strong> Sale cuando falta un dato en la fuente o cuando el ratio no tendría sentido (dividir entre 0, patrimonio o beneficio negativos). Nunca se estima un dato que falta.</li>
+    <li><strong>Deuda = deuda financiera</strong> (préstamos y bonos, a largo y corto plazo), sin arrendamientos operativos.</li>
+    <li><strong>Sin umbrales de "alto" o "bajo".</strong> Si un ratio es bueno o malo depende del sector, así que no se colorea ni se califica. Para comparar, está la mediana de cada sector en <a href="{% url 'comparar' %}">Comparar</a>. Solo se colorean las variaciones (verde si suben, rojo si bajan).</li>
+    <li><strong>La IA no calcula.</strong> Gemini solo recibe la ficha con las cifras ya calculadas y las explica. Después, un verificador comprueba que cada número de su explicación esté en la ficha, y avisa si no.</li>
+  </ul>
+{% endblock %}

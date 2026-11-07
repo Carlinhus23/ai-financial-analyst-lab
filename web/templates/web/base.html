@@ -11,6 +11,8 @@
     /* Selector del menú: compacto, a la altura de los enlaces. */
     nav select { margin: 0; padding-block: 0.35rem; width: auto; }
     nav a[aria-current="page"] { font-weight: bold; text-decoration: underline; }
+    /* Metodología: las fórmulas van como texto normal, alineadas a la izquierda. */
+    td.formula { text-align: left; }
     /* Comparar: la tabla tiene su propia zona de desplazamiento y, al moverse
        por ella, la fila de títulos (arriba) y la columna de empresas (a la
        izquierda) se quedan fijas. El fondo tapa lo que pasa por debajo. */
@@ -47,6 +49,7 @@
       <ul>
         {# aria-current marca la página en la que estás (Pico la resalta). #}
         <li><a href="{% url 'comparar' %}"{% if request.resolver_match.url_name == "comparar" %} aria-current="page"{% endif %}>Comparar</a></li>
+        <li><a href="{% url 'metodologia' %}"{% if request.resolver_match.url_name == "metodologia" %} aria-current="page"{% endif %}>Metodología</a></li>
         {% if empresas_menu %}
           <li>
             {# Al elegir una empresa, el navegador va a su página. #}

@@ -8,5 +8,6 @@ urlpatterns = [
     path("empresa/<str:symbol>/", views.empresa, name="empresa"),
     path("empresa/<str:symbol>/csv/", views.empresa_csv, name="empresa_csv"),
     path("comparar/", views.comparar, name="comparar"),
+    path("metodologia/", views.metodologia, name="metodologia"),
     path("admin/", admin.site.urls),
 ]
