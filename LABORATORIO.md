@@ -67,8 +67,11 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 - Idea 3 · Minigráficos SVG de evolución (sin Chart.js: sería dependencia
   nueva; si Carlos quiere gráficos grandes, preguntarle) · `2531b5d` · 3/5
   (07-11-2026).
+- Idea 4 · Estados financieros (desplegable, millones) · `a61ac9e` · 1/5
+  (07-11-2026).
 
-Guía: tabla de mejoras `mrvek3gz8sk.7238` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.10755` (cambia de id si se reescribe).
+Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 4.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 7.
