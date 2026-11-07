@@ -70,9 +70,14 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 - Idea 4 · Estados financieros (desplegable, millones) · `a61ac9e` · 1/5
   (07-11-2026).
 - Idea 5 · Mediana del sector en Comparar · `090bf46` · 2/5 (07-11-2026).
+- Idea 6 · Enlace a la lista de 10-K de la empresa en la SEC · `da222e5` · 1/5
+  (07-11-2026). Pendiente (preguntar a Carlos): enlace al 10-K de cada año,
+  guardando el `accn` en una columna nueva (hay que regenerar la base).
 
-Guía: tabla de mejoras `mrvek3gz8sk.13637` (cambia de id si se reescribe).
+Loop parado por Carlos el 07-11-2026 tras la idea 6. Siguiente: idea 7.
+
+Guía: tabla de mejoras `mrvek3gz8sk.16862` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 8.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 9.
