@@ -56,7 +56,7 @@
           <tr class="grupo"><th colspan="{{ ejercicios|length|add:2 }}">{{ grupo.nombre }}</th></tr>
           {% for fila in grupo.filas %}
             <tr>
-              <th>{{ fila.nombre }}</th>
+              <th><abbr title="{{ fila.formula }}">{{ fila.nombre }}</abbr></th>
               {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
               <td>
                 {% if fila.puntos %}
@@ -102,6 +102,7 @@
   <p><small>
     Fuente: {{ fuente }} (<a href="{{ url_10k }}">ver los 10-K originales en la SEC</a>) · extraído (UTC): {{ extraccion|date:"Y-m-d H:i" }}.
     ROA y ROE con balance de cierre del ejercicio. "—" = no calculable.
+    Pasa el ratón por el nombre de un ratio para ver su fórmula.
     Evolución: cada línea va del valor más bajo al más alto de esa fila (no compara filas entre sí).
   </small></p>
 {% endblock %}

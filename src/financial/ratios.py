@@ -27,6 +27,36 @@ NOMBRES_RATIOS = {
     "crecimiento_beneficio": "Crecimiento del beneficio",
 }
 
+# Fórmula de cada ratio en palabras, tal y como la calculan las funciones de
+# abajo. Se enseña en la web al pasar el ratón por el nombre del ratio.
+FORMULAS_RATIOS = {
+    "deuda_sobre_activos": "Deuda financiera total / activo total",
+    "deuda_sobre_patrimonio": (
+        "Deuda financiera total / patrimonio neto (— si el patrimonio es ≤ 0)"
+    ),
+    "liquidez_corriente": "Activo corriente / pasivo corriente",
+    "prueba_acida": "(Activo corriente − inventario) / pasivo corriente",
+    "ratio_caja": "Caja y equivalentes / pasivo corriente",
+    "margen_bruto": "Beneficio bruto / ventas",
+    "margen_operativo": "Resultado operativo / ventas",
+    "margen_neto": "Beneficio neto / ventas",
+    "roa": "Beneficio neto / activo total de cierre",
+    "roe": ("Beneficio neto / patrimonio neto de cierre (— si el patrimonio es ≤ 0)"),
+    "rotacion_activos": "Ventas / activo total",
+    "dias_inventario": "Inventario / (ventas − beneficio bruto) × 365",
+    "margen_fcf": "(Flujo de caja operativo + capex) / ventas",
+    "calidad_beneficio": (
+        "Flujo de caja operativo / beneficio neto (— si el beneficio es ≤ 0)"
+    ),
+    "crecimiento_ventas": (
+        "(Ventas − ventas del año anterior) / ventas del año anterior"
+    ),
+    "crecimiento_beneficio": (
+        "(Beneficio − beneficio del año anterior) / beneficio del año anterior"
+        " (— si el anterior es ≤ 0)"
+    ),
+}
+
 # Los mismos ratios agrupados por lo que miden, para presentarlos por bloques.
 # Cada ratio está en un solo grupo (hay un test que lo comprueba).
 GRUPOS_RATIOS = {

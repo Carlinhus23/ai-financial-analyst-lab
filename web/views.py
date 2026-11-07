@@ -6,6 +6,7 @@ from django.shortcuts import render
 
 from src.data.sec_client import url_10k
 from src.financial.ratios import (
+    FORMULAS_RATIOS,
     GRUPOS_RATIOS,
     NOMBRES_RATIOS,
     calcular_medianas_sector,
@@ -139,6 +140,7 @@ def empresa(request, symbol):
             "filas": [
                 {
                     "nombre": NOMBRES_RATIOS[columna],
+                    "formula": FORMULAS_RATIOS[columna],
                     "valores": [formatear(columna, v) for v in ratios[columna]],
                     "puntos": _minigrafico(ratios[columna].tolist()),
                 }

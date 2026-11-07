@@ -314,3 +314,10 @@ def test_pagina_empresa_agrupa_los_ratios_en_bloques(client, db_con_aapl):
     ]
     assert posiciones == sorted(posiciones)
     assert texto.index(">Endeudamiento</th>") < texto.index("Deuda / activos")
+
+
+def test_el_nombre_de_cada_ratio_lleva_su_formula(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert '<abbr title="Deuda financiera total / activo total">' in texto
+    assert texto.count("<abbr title=") == len(views.NOMBRES_RATIOS)

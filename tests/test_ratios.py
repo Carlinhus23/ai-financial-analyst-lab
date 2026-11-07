@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from src.financial.ratios import (
+    FORMULAS_RATIOS,
     GRUPOS_RATIOS,
     NOMBRES_RATIOS,
     calcular_calidad_beneficio,
@@ -402,3 +403,7 @@ def test_cada_ratio_esta_en_un_solo_grupo():
 
     assert sorted(agrupados) == sorted(NOMBRES_RATIOS)  # ni falta ni sobra
     assert len(agrupados) == len(set(agrupados))  # ninguno repetido
+
+
+def test_cada_ratio_tiene_su_formula():
+    assert sorted(FORMULAS_RATIOS) == sorted(NOMBRES_RATIOS)
