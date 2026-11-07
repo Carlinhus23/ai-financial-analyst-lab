@@ -162,7 +162,9 @@ Cola nueva (07-11-2026), sin dependencias ni cambios en la base:
     (falta el dato en la SEC, patrimonio negativo...).
 - Idea 13 · Mediana del sector en la página de empresa (guía: mejora 22) ·
   `73d8ccc` · 2/5 (07-11-2026). Depende de 5 y 12.
-Siguiente: idea 14.
+- Idea 14 · Botón "Pedir otra explicación" (guía: mejora 23; `nueva=True`,
+  `?explicar=nueva`) · `e289400` · 2/5 (07-11-2026). Depende de 10, 17, 21.
+Siguiente: idea 15.
 Para probar algo que solo se ve al desplazarse: copiar la página con curl al
 scratchpad, añadir un <script> que haga scrollTop/scrollLeft, y capturar con
 --virtual-time-budget=3000 (las anclas #X en Edge sin ventana no son fiables).
@@ -173,8 +175,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.73086` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.76683` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 39.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 42.
