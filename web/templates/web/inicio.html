@@ -3,12 +3,24 @@
 {% block contenido %}
   <h1>Empresas analizadas</h1>
   <p>Ratios financieros calculados a partir de los estados contables oficiales. Elige una empresa:</p>
-  {% if empresas %}
-    <ul>
-      {% for symbol in empresas %}
-        <li><a href="{% url 'empresa' symbol %}">{{ symbol }}</a></li>
+  {% if tarjetas %}
+    <div class="tarjetas">
+      {% for t in tarjetas %}
+        <article>
+          <header>
+            <small>{{ t.sector }}</small><br>
+            <a href="{% url 'empresa' t.symbol %}"><strong>{{ t.symbol }}</strong></a>
+            <small>· {{ t.nombre }}</small>
+          </header>
+          <dl>
+            <dt>Precio</dt><dd>{{ t.precio }}</dd>
+            <dt>PER</dt><dd>{{ t.per }}</dd>
+            <dt>Ventas {{ t.ejercicio }}</dt><dd>{{ t.crecimiento }}</dd>
+          </dl>
+        </article>
       {% endfor %}
-    </ul>
+    </div>
+    <p><small>Ordenadas por sector. "Ventas" = crecimiento respecto al ejercicio anterior. PER con la última cotización descargada.</small></p>
   {% else %}
     <p>Todavía no hay datos. Ejecuta <code>python main.py</code> para descargarlos.</p>
   {% endif %}

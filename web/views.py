@@ -92,7 +92,22 @@ def _formatear_perfil(perfil):
 
 
 def inicio(request):
-    return render(request, "web/inicio.html", {"empresas": _empresas_disponibles()})
+    # Una tarjeta por empresa con sus cifras clave, agrupadas por sector (la
+    # plantilla las agrupa con regroup: llegan ordenadas por sector).
+    datos = obtener_comparacion(_ruta_db()) if _empresas_disponibles() else []
+    tarjetas = [
+        {
+            "symbol": fila["symbol"],
+            "nombre": fila["nombre"],
+            "sector": fila["sector"],
+            "precio": f"{formatear('precio', fila['precio'])} {fila['moneda']}",
+            "per": formatear("per", fila["per"]),
+            "crecimiento": formatear("crecimiento_ventas", fila["crecimiento_ventas"]),
+            "ejercicio": fila["fiscal_year"],
+        }
+        for fila in datos
+    ]
+    return render(request, "web/inicio.html", {"tarjetas": tarjetas})
 
 
 def empresa(request, symbol):

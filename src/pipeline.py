@@ -108,6 +108,10 @@ def obtener_comparacion(ruta_db=RUTA_DB):
         # El mismo PER que obtener_perfil: el beneficio ya está en la fila.
         capitalizacion = perfil.get("market_cap", float("nan"))
         fila["per"] = calcular_per(capitalizacion, fila["net_income"])
+        # Para las tarjetas de la portada.
+        fila["nombre"] = perfil.get("company_name") or fila["symbol"]
+        fila["precio"] = perfil.get("price", float("nan"))
+        fila["moneda"] = perfil.get("currency") or ""
         filas.append(fila)
 
     return sorted(filas, key=lambda fila: fila["sector"])

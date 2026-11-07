@@ -21,6 +21,15 @@ def test_inicio_lista_las_empresas_guardadas(client, db_con_aapl):
     assert "/empresa/AAPL/" in respuesta.text
 
 
+def test_inicio_muestra_una_tarjeta_con_las_cifras_clave(client, db_con_aapl):
+    texto = client.get("/").text
+
+    assert "Technology" in texto  # sector en la tarjeta
+    assert "Apple Inc." in texto
+    assert "150,50 USD" in texto  # precio
+    assert "20,00" in texto  # PER
+
+
 def test_inicio_sin_base_de_datos_avisa_y_no_la_crea(client, tmp_path, settings):
     settings.RUTA_DUCKDB = tmp_path / "no_existe.duckdb"
 

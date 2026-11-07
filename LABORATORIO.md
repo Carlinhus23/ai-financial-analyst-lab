@@ -42,6 +42,23 @@ pestañas de la guía y poner la decisión "Ya en el principal".
   principal, 2 Descartar, 3 Ya en el principal)
 - Leer con `sinceRev` antes de editar: Carlos puede haber cambiado la tabla.
 
+## Cola de interfaz (PRIORIDAD: Carlos pidió "mejora la interfaz", 07-11-2026)
+
+Sin dependencias nuevas: Pico.css (ya está) + CSS propio en `base.html`.
+Nada de colores que juzguen "bueno/malo" un ratio (depende del sector).
+
+I1. Portada con tarjetas por empresa (nombre, precio, PER, crecimiento de
+    ventas), agrupadas por sector.
+I2. Tabla de ratios de la empresa agrupada en bloques (endeudamiento y
+    liquidez, rentabilidad, eficiencia, caja, crecimiento).
+I3. Fórmula de cada ratio al pasar el ratón por su nombre.
+I4. Cabecera de empresa con cifras destacadas grandes (precio,
+    capitalización, PER).
+I5. Verde/rojo solo para el SIGNO de variaciones (sesión, crecimiento).
+I6. Comparar: cabecera y primera columna fijas al desplazarse.
+I7. Botón "Explicar con IA" con indicador de espera (aria-busy de Pico).
+I8. Navegación: página actual marcada y selector rápido de empresa.
+
 ## Cola de ideas (por orden; las primeras, las más vistosas para la demo)
 
 1. Verificador de cifras de la IA: avisar si la explicación trae un número
