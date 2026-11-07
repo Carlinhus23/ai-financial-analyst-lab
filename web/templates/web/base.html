@@ -8,6 +8,11 @@
   <style>
     td { text-align: right; font-variant-numeric: tabular-nums; }
     .tabla { overflow-x: auto; }
+    /* Cifras destacadas de la empresa: etiqueta pequeña encima, número grande. */
+    .cifras { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; }
+    .cifras div { display: flex; flex-direction: column; }
+    .cifras small { color: var(--pico-muted-color); }
+    .cifras strong { font-size: 1.75rem; line-height: 1.2; font-variant-numeric: tabular-nums; }
     /* Título de cada bloque de ratios: en mayúsculas pequeñas, como un rótulo. */
     tr.grupo th { padding-top: 1.25rem; color: var(--pico-primary); text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.06em; }
     /* Portada: tarjetas en rejilla que se adaptan al ancho de la pantalla. */

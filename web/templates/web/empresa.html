@@ -10,11 +10,21 @@
       <header>
         <strong>{{ perfil.nombre }}</strong> · {{ perfil.sector }} · {{ perfil.industria }}
       </header>
-      <p>
-        Precio: <strong>{{ perfil.precio }} {{ perfil.moneda }}</strong> ({{ perfil.variacion }} en la sesión)
-        · Capitalización: {{ perfil.capitalizacion }} {{ perfil.moneda }}
-        · PER: <strong>{{ perfil.per }}</strong>
-      </p>
+      <div class="cifras">
+        <div>
+          <small>Precio</small>
+          <strong>{{ perfil.precio }} {{ perfil.moneda }}</strong>
+          <small>{{ perfil.variacion }} en la sesión</small>
+        </div>
+        <div>
+          <small>Capitalización</small>
+          <strong>{{ perfil.capitalizacion }} {{ perfil.moneda }}</strong>
+        </div>
+        <div>
+          <small>PER</small>
+          <strong>{{ perfil.per }}</strong>
+        </div>
+      </div>
       <footer>
         <small>
           Cotización de Yahoo Finance del {{ perfil.fecha|date:"Y-m-d" }}.

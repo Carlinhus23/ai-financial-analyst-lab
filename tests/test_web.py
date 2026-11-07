@@ -57,8 +57,16 @@ def test_pagina_empresa_muestra_perfil_y_per(client, db_con_aapl):
     assert "Apple Inc." in texto
     assert "150,50 USD" in texto
     assert "-0,15 %" in texto
-    assert "PER: <strong>20,00</strong>" in texto
+    assert "<small>PER</small>\n          <strong>20,00</strong>" in texto
     assert "finance.yahoo.com/quote/AAPL/news" in texto
+
+
+def test_pagina_empresa_destaca_precio_capitalizacion_y_per(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    cifras = texto[texto.index('<div class="cifras">') :]
+    for etiqueta in ["Precio", "Capitalización", "PER"]:
+        assert f"<small>{etiqueta}</small>" in cifras
 
 
 def test_comparar_muestra_una_fila_por_empresa(client, db_con_aapl):
