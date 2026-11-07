@@ -69,6 +69,31 @@
     </table>
   </div>
 
+  <details>
+    <summary>Estados financieros (millones de {{ moneda }})</summary>
+    <div class="tabla">
+      <table>
+        <thead>
+          <tr>
+            <th>Partida</th>
+            {% for ejercicio in ejercicios %}<th>{{ ejercicio }}</th>{% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for estado in estados %}
+            <tr><th colspan="{{ ejercicios|length|add:1 }}">{{ estado.nombre }}</th></tr>
+            {% for fila in estado.filas %}
+              <tr>
+                <td>{{ fila.nombre }}</td>
+                {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </details>
+
   <p><small>
     Fuente: {{ fuente }} · extraído (UTC): {{ extraccion|date:"Y-m-d H:i" }}.
     ROA y ROE con balance de cierre del ejercicio. "—" = no calculable.

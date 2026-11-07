@@ -179,6 +179,20 @@ def test_minigrafico_vacio_si_hay_menos_de_dos_datos():
     assert views._minigrafico([nan, 0.5, nan]) == ""
 
 
+def test_millones_con_punto_de_miles_y_raya_si_falta():
+    assert views._millones(391_035_000_000) == "391.035"
+    assert views._millones(-1_234_000_000) == "-1.234"
+    assert views._millones(float("nan")) == "—"
+
+
+def test_pagina_empresa_muestra_los_estados_financieros(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "Estados financieros (millones de USD)" in texto
+    for partida in ["Activo total", "Ventas", "Flujo de caja libre (calculado)"]:
+        assert partida in texto
+
+
 def test_pagina_empresa_tiene_columna_de_evolucion(client, db_con_aapl):
     # Con un solo ejercicio no hay línea que dibujar, pero la página no falla.
     texto = client.get("/empresa/AAPL/").text
