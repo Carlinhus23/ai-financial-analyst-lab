@@ -104,12 +104,19 @@ I8. Navegación: página actual marcada y selector rápido de empresa.
   clave = ficha exacta) · `754aab2` · 3/5 (07-11-2026). Depende de la 1.
   Posible mejora: botón "pedir otra explicación".
 
-Loop parado por Carlos el 07-11-2026 tras la idea 10. Siguiente: idea 11.
+- I1 · Portada con tarjetas (guía: mejora 11) · `fef633e` · 2/5 (07-11-2026).
+  Depende de la 2.
+
+Loop reanudado el 07-11-2026 con prioridad a la interfaz. Siguiente: I2.
+En mejoras visuales, MIRARLAS: reiniciar la web (con --noreload no recarga
+plantillas) y captura con Edge sin ventana:
+`msedge --headless=new --disable-gpu --hide-scrollbars --window-size=1280,1000
+--screenshot=<scratchpad>\x.png http://127.0.0.1:8001/...`, luego leer la imagen.
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.28292` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.32240` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 15.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 18.
