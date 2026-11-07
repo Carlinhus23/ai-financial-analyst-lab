@@ -151,3 +151,19 @@ def test_comparar_empresas_envia_las_dos_fichas_con_sus_instrucciones(
     # La segunda vez sale guardada (clave "AAPL+KO"), sin llamar a Gemini.
     pipeline.comparar_empresas("AAPL", "KO", ruta_db)
     assert len(recibido) == 1
+
+
+def test_con_nueva_vuelve_a_llamar_a_gemini_y_guarda_la_nueva(
+    api_falsa, monkeypatch, tmp_path
+):
+    ruta_db = str(tmp_path / "test.duckdb")
+    pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
+    respuestas = iter(["Primera.", "Segunda."])
+    monkeypatch.setattr(pipeline, "explicar", lambda f, i: (next(respuestas), "x"))
+
+    pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+    nueva = pipeline.explicar_empresa("AAPL", ruta_db=ruta_db, nueva=True)
+    despues = pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+
+    assert nueva[0] == "Segunda."
+    assert despues[0] == "Segunda."  # la guardada ahora es la nueva

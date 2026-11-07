@@ -155,7 +155,9 @@ def test_empresa_muestra_el_boton_de_ia_sin_llamar_a_gemini(
 
 def test_al_pulsar_el_boton_muestra_la_explicacion(client, db_con_aapl, monkeypatch):
     monkeypatch.setattr(
-        views, "explicar_empresa", lambda s, r: ("La deuda es baja.", "gemini-x", [])
+        views,
+        "explicar_empresa",
+        lambda s, r, nueva: ("La deuda es baja.", "gemini-x", []),
     )
 
     texto = client.get("/empresa/AAPL/?explicar=1").text
@@ -172,7 +174,7 @@ def test_avisa_si_la_ia_escribe_cifras_que_no_estan_en_la_ficha(
     monkeypatch.setattr(
         views,
         "explicar_empresa",
-        lambda s, r: ("La deuda sube un 99,9 %.", "gemini-x", ["99,9"]),
+        lambda s, r, nueva: ("La deuda sube un 99,9 %.", "gemini-x", ["99,9"]),
     )
 
     texto = client.get("/empresa/AAPL/?explicar=1").text
@@ -447,3 +449,19 @@ def test_empresa_muestra_la_mediana_de_su_sector(client, db_con_aapl, monkeypatc
 
     assert "Mediana sector</abbr></th>" in texto
     assert '<td class="mediana">20,0 %</td>' in texto  # deuda / activos
+
+
+def test_pedir_otra_explicacion_ignora_la_guardada(client, db_con_aapl, monkeypatch):
+    pedidas = []
+
+    def explicar_falso(symbol, ruta, nueva):
+        pedidas.append(nueva)
+        return "La deuda es baja.", "gemini-x", []
+
+    monkeypatch.setattr(views, "explicar_empresa", explicar_falso)
+
+    texto = client.get("/empresa/AAPL/?explicar=1").text
+    client.get("/empresa/AAPL/?explicar=nueva")
+
+    assert pedidas == [False, True]
+    assert 'href="?explicar=nueva"' in texto  # el botón sale bajo la explicación

@@ -142,10 +142,12 @@ def empresa(request, symbol):
 
     # La explicación de la IA solo se pide al pulsar el botón (?explicar=1):
     # tarda unos segundos y usa la API de Gemini.
+    # ?explicar=nueva pide otra aunque haya una guardada.
     explicacion, modelo, dudosas = None, None, []
     if "explicar" in request.GET:
+        nueva = request.GET["explicar"] == "nueva"
         try:
-            explicacion, modelo, dudosas = explicar_empresa(symbol, _ruta_db())
+            explicacion, modelo, dudosas = explicar_empresa(symbol, _ruta_db(), nueva)
         except RuntimeError as error:
             explicacion = f"No se pudo generar la explicación: {error}"
 

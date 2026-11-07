@@ -138,12 +138,14 @@ def ficha_empresa(symbol, ruta_db=RUTA_DB):
     return "\n".join(lineas)
 
 
-def explicar_empresa(symbol, ruta_db=RUTA_DB):
+def explicar_empresa(symbol, ruta_db=RUTA_DB, nueva=False):
     # La IA explica la ficha de la empresa. Llama a Gemini: tarda unos segundos.
     # Devuelve (explicación, modelo que la ha escrito, cifras que la IA ha
     # escrito y no están en la ficha; vacía si todo cuadra).
+    # nueva=True: no usa la guardada y pide otra a Gemini (que pasa a ser la
+    # guardada, porque vale la más reciente).
     ficha = ficha_empresa(symbol, ruta_db)
-    return _explicar_con_memoria(symbol, ficha, INSTRUCCIONES, ruta_db)
+    return _explicar_con_memoria(symbol, ficha, INSTRUCCIONES, ruta_db, nueva)
 
 
 def comparar_empresas(symbol_a, symbol_b, ruta_db=RUTA_DB):
@@ -155,11 +157,12 @@ def comparar_empresas(symbol_a, symbol_b, ruta_db=RUTA_DB):
     return _explicar_con_memoria(clave, ficha, INSTRUCCIONES_COMPARAR, ruta_db)
 
 
-def _explicar_con_memoria(clave, ficha, instrucciones, ruta_db):
+def _explicar_con_memoria(clave, ficha, instrucciones, ruta_db, nueva=False):
     # Si esta misma ficha ya se explicó, usa la explicación guardada: sale al
     # instante, no gasta llamadas y funciona aunque Gemini esté saturado.
-    # Si no, la pide a Gemini y la guarda. Siempre pasa el verificador.
-    guardada = obtener_explicacion(clave, ficha, ruta_db)
+    # Si no (o si se pide una nueva), la pide a Gemini y la guarda. Siempre
+    # pasa el verificador.
+    guardada = None if nueva else obtener_explicacion(clave, ficha, ruta_db)
     if guardada:
         texto, modelo, fecha = guardada
         modelo = f"{modelo}, guardada el {fecha:%Y-%m-%d %H:%M} UTC"

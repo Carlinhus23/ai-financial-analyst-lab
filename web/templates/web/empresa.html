@@ -46,6 +46,9 @@
           <p><small>Comprobado: todas las cifras de la explicación están en la ficha.</small></p>
         {% endif %}
         <small>La IA no calcula: solo explica las cifras ya calculadas, y puede equivocarse al interpretarlas.</small>
+        {% if modelo %}
+          <p><a href="?explicar=nueva" role="button" onclick="this.setAttribute('aria-busy', 'true'); this.textContent = 'La IA está escribiendo…';">Pedir otra explicación</a></p>
+        {% endif %}
       </footer>
     </article>
   {% else %}
