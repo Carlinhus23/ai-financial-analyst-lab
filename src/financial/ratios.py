@@ -4,6 +4,7 @@
 # Los ratios que mezclan balance y resultados (ROA, ROE) usan el balance de
 # cierre del año, no la media entre inicio y fin: es una simplificación.
 
+import pandas as pd
 
 # Columna de cada ratio y su nombre para mostrar (terminal y web), en el
 # orden en que se presentan.
@@ -194,6 +195,24 @@ def calcular_per(capitalizacion, beneficio_neto):
     if not beneficio_neto > 0:
         return float("nan")
     return capitalizacion / beneficio_neto
+
+
+# --- Comparación con el sector ---
+
+
+def calcular_medianas_sector(filas, columnas, minimo=2):
+    # Mediana de cada ratio dentro de cada sector: sirve de referencia para
+    # comparar una empresa con sus parecidas, sin umbrales inventados de
+    # "alto" o "bajo". Solo para sectores con al menos `minimo` empresas (la
+    # mediana de una sola empresa es ella misma) y sin las de sector "—".
+    # Los ratios vacíos (NaN) no cuentan. Devuelve {sector: {columna: mediana}}.
+    if not filas:
+        return {}
+    df = pd.DataFrame(filas)
+    df = df[df["sector"] != "—"]
+    grupos = df.groupby("sector")
+    medianas = grupos[columnas].median()
+    return medianas[grupos.size() >= minimo].to_dict("index")
 
 
 # --- Agrupadores ---

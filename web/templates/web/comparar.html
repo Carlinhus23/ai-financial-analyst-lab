@@ -19,12 +19,21 @@
         </thead>
         <tbody>
           {% for fila in filas %}
-            <tr>
-              <th><a href="{% url 'empresa' fila.symbol %}">{{ fila.symbol }}</a></th>
-              <td>{{ fila.sector }}</td>
-              <td>{{ fila.ejercicio }}</td>
-              {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
-            </tr>
+            {% if fila.es_mediana %}
+              <tr>
+                <th><em>Mediana</em></th>
+                <td><em>{{ fila.sector }}</em></td>
+                <td></td>
+                {% for valor in fila.valores %}<td><em>{{ valor }}</em></td>{% endfor %}
+              </tr>
+            {% else %}
+              <tr>
+                <th><a href="{% url 'empresa' fila.symbol %}">{{ fila.symbol }}</a></th>
+                <td>{{ fila.sector }}</td>
+                <td>{{ fila.ejercicio }}</td>
+                {% for valor in fila.valores %}<td>{{ valor }}</td>{% endfor %}
+              </tr>
+            {% endif %}
           {% endfor %}
         </tbody>
       </table>
@@ -33,6 +42,7 @@
     <p><small>
       Cada empresa cierra su ejercicio en una fecha distinta (Apple en septiembre, Microsoft en junio...).
       PER con la cotización más reciente descargada. "—" = no calculable.
+      Mediana: el valor del medio dentro del sector (solo en sectores con 2 o más empresas); sirve de referencia, no de umbral.
     </small></p>
   {% else %}
     <p>Todavía no hay datos. Ejecuta <code>python main.py</code> para descargarlos.</p>

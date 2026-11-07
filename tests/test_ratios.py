@@ -11,6 +11,7 @@ from src.financial.ratios import (
     calcular_liquidez_corriente,
     calcular_margen_fcf,
     calcular_margenes,
+    calcular_medianas_sector,
     calcular_per,
     calcular_prueba_acida,
     calcular_ratio_caja,
@@ -324,3 +325,34 @@ def test_crecimiento_nan_si_falta_un_año_o_venia_de_perdidas():
     # 2024 sí tiene ventas de 2023, pero en 2023 hubo pérdidas: % sin sentido.
     assert resultado["crecimiento_ventas"][2] == pytest.approx(130 / 120 - 1)
     assert math.isnan(resultado["crecimiento_beneficio"][2])
+
+
+def test_mediana_por_sector_sin_contar_los_vacios():
+    nan = float("nan")
+    filas = [
+        {"sector": "Technology", "roe": 0.10, "per": 30.0},
+        {"sector": "Technology", "roe": 0.50, "per": nan},
+        {"sector": "Technology", "roe": 0.20, "per": 20.0},
+        {"sector": "Energy", "roe": 0.15, "per": 12.0},
+        {"sector": "Energy", "roe": 0.05, "per": 8.0},
+    ]
+
+    medianas = calcular_medianas_sector(filas, ["roe", "per"])
+
+    assert medianas["Technology"]["roe"] == pytest.approx(0.20)
+    assert medianas["Technology"]["per"] == pytest.approx(25.0)  # NaN fuera
+    assert medianas["Energy"]["roe"] == pytest.approx(0.10)  # dos: el punto medio
+
+
+def test_sin_mediana_si_el_sector_tiene_una_empresa_o_no_se_sabe():
+    filas = [
+        {"sector": "Energy", "roe": 0.15},
+        {"sector": "—", "roe": 0.30},
+        {"sector": "—", "roe": 0.40},
+    ]
+
+    assert calcular_medianas_sector(filas, ["roe"]) == {}
+
+
+def test_mediana_sin_empresas_no_falla():
+    assert calcular_medianas_sector([], ["roe"]) == {}

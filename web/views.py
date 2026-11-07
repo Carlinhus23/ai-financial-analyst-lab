@@ -4,7 +4,7 @@ from django.conf import settings
 from django.http import Http404
 from django.shortcuts import render
 
-from src.financial.ratios import NOMBRES_RATIOS
+from src.financial.ratios import NOMBRES_RATIOS, calcular_medianas_sector
 from src.formato import formatear
 from src.pipeline import (
     explicar_empresa,
@@ -153,15 +153,34 @@ def comparar(request):
     # Una fila por empresa (su último ejercicio) y una columna por ratio.
     columnas = {"per": "PER", **NOMBRES_RATIOS}
     datos = obtener_comparacion(_ruta_db()) if _empresas_disponibles() else []
-    filas = [
-        {
-            "symbol": fila["symbol"],
-            "sector": fila["sector"],
-            "ejercicio": fila["fiscal_year"],
-            "valores": [formatear(columna, fila[columna]) for columna in columnas],
-        }
-        for fila in datos
-    ]
+    medianas = calcular_medianas_sector(datos, list(columnas))
+
+    # Las empresas llegan ordenadas por sector: al acabar cada sector que
+    # tenga mediana, se añade su fila "Mediana del sector".
+    filas = []
+    for i, fila in enumerate(datos):
+        filas.append(
+            {
+                "symbol": fila["symbol"],
+                "sector": fila["sector"],
+                "ejercicio": fila["fiscal_year"],
+                "valores": [formatear(columna, fila[columna]) for columna in columnas],
+            }
+        )
+        acaba_el_sector = (
+            i + 1 == len(datos) or datos[i + 1]["sector"] != fila["sector"]
+        )
+        if acaba_el_sector and fila["sector"] in medianas:
+            mediana = medianas[fila["sector"]]
+            filas.append(
+                {
+                    "es_mediana": True,
+                    "sector": fila["sector"],
+                    "valores": [
+                        formatear(columna, mediana[columna]) for columna in columnas
+                    ],
+                }
+            )
     return render(
         request,
         "web/comparar.html",

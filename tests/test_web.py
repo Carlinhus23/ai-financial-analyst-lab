@@ -61,6 +61,30 @@ def test_comparar_muestra_una_fila_por_empresa(client, db_con_aapl):
     assert "Technology" in texto
     assert "20,00" in texto  # PER
     assert "25,0 %" in texto  # deuda / activos
+    assert "<em>Mediana</em>" not in texto  # una sola empresa en su sector
+
+
+def test_comparar_anade_la_mediana_al_final_de_cada_sector(
+    client, db_con_aapl, monkeypatch
+):
+    def empresa(symbol, per):
+        fila = {columna: float("nan") for columna in views.NOMBRES_RATIOS}
+        return {
+            **fila,
+            "symbol": symbol,
+            "sector": "Tech",
+            "fiscal_year": "2025",
+            "per": per,
+        }
+
+    datos = [empresa("AAPL", 20.0), empresa("MSFT", 30.0)]
+    monkeypatch.setattr(views, "obtener_comparacion", lambda ruta: datos)
+
+    texto = client.get("/comparar/").text
+
+    assert "<em>Mediana</em>" in texto
+    assert "<em>25,00</em>" in texto  # mediana del PER de 20 y 30
+    assert texto.index("/empresa/MSFT/") < texto.index("<em>Mediana</em>")
 
 
 def test_comparar_sin_base_de_datos_avisa(client, tmp_path, settings):
