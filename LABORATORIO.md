@@ -134,7 +134,11 @@ I9. Página "Metodología": todas las fórmulas (FORMULAS_RATIOS), fuentes y
 I10. Comprobar de verdad la vista de móvil (ver pendiente de abajo).
 Después, volver a la cola de ideas (11 y 12).
 
-Siguiente: I9. Pendiente de mirar: en la captura a 400 px el borde derecho
+- I9 · Página de Metodología (guía: mejora 19) · `2f81108` · 1/5
+  (07-11-2026). Su texto menciona las mejoras 1, 5, 13 y 15: si pasa al
+  principal sin ellas, quitar esas frases.
+
+Siguiente: I10. Pendiente de mirar: en la captura a 400 px el borde derecho
 salía cortado; probablemente es el ancho mínimo de ventana de Edge sin
 ventana (~500 px). Comprobarlo antes de dar por buena la vista de móvil.
 Para probar algo que solo se ve al desplazarse: copiar la página con curl al
@@ -147,8 +151,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.57408` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.61147` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 30.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 32.
