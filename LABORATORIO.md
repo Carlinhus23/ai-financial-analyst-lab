@@ -69,9 +69,10 @@ pestañas de la guía y poner la decisión "Ya en el principal".
   (07-11-2026).
 - Idea 4 · Estados financieros (desplegable, millones) · `a61ac9e` · 1/5
   (07-11-2026).
+- Idea 5 · Mediana del sector en Comparar · `090bf46` · 2/5 (07-11-2026).
 
-Guía: tabla de mejoras `mrvek3gz8sk.10755` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.13637` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 7.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 8.
