@@ -78,11 +78,18 @@ def test_explicar_empresa_solo_envia_la_ficha(api_falsa, monkeypatch, tmp_path):
     ruta_db = str(tmp_path / "test.duckdb")
     pipeline.actualizar_empresa("AAPL", num_periodos=1, ruta_db=ruta_db)
     recibido = []
-    monkeypatch.setattr(pipeline, "explicar", lambda ficha: recibido.append(ficha))
 
-    pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
+    def explicar_falso(ficha):
+        recibido.append(ficha)
+        return "La deuda es el 25,0 % y sube un 99,9 %.", "gemini-x"
+
+    monkeypatch.setattr(pipeline, "explicar", explicar_falso)
+
+    texto, modelo, dudosas = pipeline.explicar_empresa("AAPL", ruta_db=ruta_db)
 
     assert recibido == [pipeline.ficha_empresa("AAPL", ruta_db=ruta_db)]
+    assert modelo == "gemini-x"
+    assert dudosas == ["99,9"]  # 25,0 % sí está en la ficha; 99,9 no
 
 
 def test_si_no_valida_no_guarda_nada(api_falsa, tmp_path):

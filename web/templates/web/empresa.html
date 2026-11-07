@@ -30,6 +30,11 @@
       <header><strong>Explicación de la IA</strong> <small>({{ modelo|default:"Gemini" }}, a partir de las cifras de esta página)</small></header>
       {{ explicacion|linebreaks }}
       <footer>
+        {% if dudosas %}
+          <p><mark>Atención: la IA ha escrito cifras que no están en la ficha: {{ dudosas|join:" · " }}. Revísalas antes de fiarte.</mark></p>
+        {% elif modelo %}
+          <p><small>Comprobado: todas las cifras de la explicación están en la ficha.</small></p>
+        {% endif %}
         <small>La IA no calcula: solo explica las cifras ya calculadas, y puede equivocarse al interpretarlas.</small>
       </footer>
     </article>

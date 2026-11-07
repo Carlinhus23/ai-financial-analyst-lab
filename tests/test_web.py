@@ -114,7 +114,7 @@ def test_empresa_muestra_el_boton_de_ia_sin_llamar_a_gemini(
 
 def test_al_pulsar_el_boton_muestra_la_explicacion(client, db_con_aapl, monkeypatch):
     monkeypatch.setattr(
-        views, "explicar_empresa", lambda s, r: ("La deuda es baja.", "gemini-x")
+        views, "explicar_empresa", lambda s, r: ("La deuda es baja.", "gemini-x", [])
     )
 
     texto = client.get("/empresa/AAPL/?explicar=1").text
@@ -122,6 +122,22 @@ def test_al_pulsar_el_boton_muestra_la_explicacion(client, db_con_aapl, monkeypa
     assert "Explicación de la IA" in texto
     assert "La deuda es baja." in texto
     assert "gemini-x" in texto
+    assert "Comprobado: todas las cifras" in texto
+
+
+def test_avisa_si_la_ia_escribe_cifras_que_no_estan_en_la_ficha(
+    client, db_con_aapl, monkeypatch
+):
+    monkeypatch.setattr(
+        views,
+        "explicar_empresa",
+        lambda s, r: ("La deuda sube un 99,9 %.", "gemini-x", ["99,9"]),
+    )
+
+    texto = client.get("/empresa/AAPL/?explicar=1").text
+
+    assert "no están en la ficha: 99,9" in texto
+    assert "Comprobado" not in texto
 
 
 def test_si_falla_la_ia_la_pagina_sigue_funcionando(client, db_con_aapl, monkeypatch):

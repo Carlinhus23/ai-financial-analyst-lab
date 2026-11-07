@@ -54,10 +54,10 @@ def empresa(request, symbol):
 
     # La explicación de la IA solo se pide al pulsar el botón (?explicar=1):
     # tarda unos segundos y usa la API de Gemini.
-    explicacion, modelo = None, None
+    explicacion, modelo, dudosas = None, None, []
     if "explicar" in request.GET:
         try:
-            explicacion, modelo = explicar_empresa(symbol, _ruta_db())
+            explicacion, modelo, dudosas = explicar_empresa(symbol, _ruta_db())
         except RuntimeError as error:
             explicacion = f"No se pudo generar la explicación: {error}"
 
@@ -80,6 +80,7 @@ def empresa(request, symbol):
         "perfil": _formatear_perfil(perfil) if perfil else None,
         "explicacion": explicacion,
         "modelo": modelo,
+        "dudosas": dudosas,
     }
     return render(request, "web/empresa.html", contexto)
 

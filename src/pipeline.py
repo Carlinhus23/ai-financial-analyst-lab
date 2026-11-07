@@ -30,6 +30,7 @@ from src.financial.ratios import (
 )
 from src.formato import formatear
 from src.llm.explicador import explicar
+from src.llm.verificador import cifras_no_encontradas
 
 # Cada dato guarda de dónde sale: estados de la SEC, cotización de Yahoo.
 FUENTE = "SEC EDGAR (10-K)"
@@ -131,8 +132,11 @@ def ficha_empresa(symbol, ruta_db=RUTA_DB):
 
 def explicar_empresa(symbol, ruta_db=RUTA_DB):
     # La IA explica la ficha de la empresa. Llama a Gemini: tarda unos segundos.
-    # Devuelve (explicación, modelo que la ha escrito).
-    return explicar(ficha_empresa(symbol, ruta_db))
+    # Devuelve (explicación, modelo que la ha escrito, cifras que la IA ha
+    # escrito y no están en la ficha; vacía si todo cuadra).
+    ficha = ficha_empresa(symbol, ruta_db)
+    texto, modelo = explicar(ficha)
+    return texto, modelo, cifras_no_encontradas(texto, ficha)
 
 
 def listar_empresas(ruta_db=RUTA_DB):
