@@ -83,12 +83,16 @@ pestañas de la guía y poner la decisión "Ya en el principal".
 - Idea 9 · Rotación de activos y días de inventario · `c1bb35f` · 1/5
   (07-11-2026).
 
-Loop reanudado por Carlos el 07-11-2026. Siguiente: idea 10.
+- Idea 10 · Guardar explicaciones de la IA en DuckDB (tabla ai_explanation,
+  clave = ficha exacta) · `754aab2` · 3/5 (07-11-2026). Depende de la 1.
+  Posible mejora: botón "pedir otra explicación".
+
+Loop parado por Carlos el 07-11-2026 tras la idea 10. Siguiente: idea 11.
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.25217` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.28292` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 13.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 15.
