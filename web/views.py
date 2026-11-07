@@ -149,6 +149,14 @@ def empresa(request, symbol):
         except RuntimeError as error:
             explicacion = f"No se pudo generar la explicación: {error}"
 
+    # Mediana de su sector (último ejercicio de cada empresa), calculada en
+    # src/ como en Comparar. None si su sector tiene una sola empresa.
+    sector = perfil["sector"] if perfil else None
+    medianas = calcular_medianas_sector(
+        obtener_comparacion(_ruta_db()), list(NOMBRES_RATIOS)
+    )
+    mediana = medianas.get(sector)
+
     # Una fila por ratio y una columna por año, agrupadas en bloques
     # (endeudamiento, liquidez...) con su título.
     grupos = [
@@ -167,6 +175,7 @@ def empresa(request, symbol):
                         for v in ratios[columna]
                     ],
                     "puntos": _minigrafico(ratios[columna].tolist()),
+                    "mediana": formatear(columna, mediana[columna]) if mediana else "",
                 }
                 for columna in columnas
             ],
@@ -191,6 +200,10 @@ def empresa(request, symbol):
         "moneda": ratios["reported_currency"].iloc[0],
         "ejercicios": ratios["fiscal_year"].tolist(),
         "grupos": grupos,
+        # Sector con mediana (la plantilla añade la columna solo si lo hay) y
+        # columnas totales de la tabla, para que los títulos de bloque la crucen.
+        "sector_mediana": sector if mediana else None,
+        "columnas_tabla": len(ratios) + (3 if mediana else 2),
         "estados": estados,
         "fuente": ratios["fuente"].iloc[0],
         "url_10k": url_10k(symbol),

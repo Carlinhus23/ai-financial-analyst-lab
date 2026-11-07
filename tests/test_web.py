@@ -423,3 +423,27 @@ def test_comparar_ia_exige_dos_empresas_distintas_con_datos(
     assert client.get("/comparar/ia/?a=AAPL&b=AAPL").status_code == 404
     assert client.get("/comparar/ia/?a=AAPL&b=MSFT").status_code == 404
     assert client.get("/comparar/ia/").status_code == 404
+
+
+def test_empresa_sin_otras_de_su_sector_no_tiene_columna_de_mediana(
+    client, db_con_aapl
+):
+    # Solo está AAPL en su sector: la "mediana" sería ella misma.
+    assert "Mediana sector" not in client.get("/empresa/AAPL/").text
+
+
+def test_empresa_muestra_la_mediana_de_su_sector(client, db_con_aapl, monkeypatch):
+    def tecnologica(symbol, valor):
+        fila = {columna: valor for columna in views.NOMBRES_RATIOS}
+        return {**fila, "symbol": symbol, "sector": "Technology"}
+
+    monkeypatch.setattr(
+        views,
+        "obtener_comparacion",
+        lambda ruta: [tecnologica("AAPL", 0.10), tecnologica("MSFT", 0.30)],
+    )
+
+    texto = client.get("/empresa/AAPL/").text
+
+    assert "Mediana sector</abbr></th>" in texto
+    assert '<td class="mediana">20,0 %</td>' in texto  # deuda / activos

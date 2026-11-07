@@ -59,16 +59,18 @@
         <tr>
           <th>Ratio</th>
           {% for ejercicio in ejercicios %}<th>{{ ejercicio }}</th>{% endfor %}
+          {% if sector_mediana %}<th><abbr title="Mediana del último ejercicio de las empresas de {{ sector_mediana }}">Mediana sector</abbr></th>{% endif %}
           <th>Evolución</th>
         </tr>
       </thead>
       {% for grupo in grupos %}
         <tbody>
-          <tr class="grupo"><th colspan="{{ ejercicios|length|add:2 }}">{{ grupo.nombre }}</th></tr>
+          <tr class="grupo"><th colspan="{{ columnas_tabla }}">{{ grupo.nombre }}</th></tr>
           {% for fila in grupo.filas %}
             <tr>
               <th><abbr title="{{ fila.formula }}">{{ fila.nombre }}</abbr></th>
               {% for texto, clase in fila.valores %}<td{% if clase %} class="{{ clase }}"{% endif %}>{{ texto }}</td>{% endfor %}
+              {% if sector_mediana %}<td class="mediana">{{ fila.mediana }}</td>{% endif %}
               <td>
                 {% if fila.puntos %}
                   <svg class="minigrafico" viewBox="-3 -3 106 30" width="100" height="28" role="img" aria-label="Evolución de {{ fila.nombre }}">
@@ -114,6 +116,7 @@
     Fuente: {{ fuente }} (<a href="{{ url_10k }}">ver los 10-K originales en la SEC</a>) · extraído (UTC): {{ extraccion|date:"Y-m-d H:i" }}.
     ROA y ROE con balance de cierre del ejercicio. "—" = no calculable.
     Pasa el ratón por el nombre de un ratio para ver su fórmula.
+    {% if sector_mediana %}Mediana sector: valor del medio entre las empresas de {{ sector_mediana }} (su último ejercicio); es una referencia, no un umbral.{% endif %}
     Evolución: cada línea va del valor más bajo al más alto de esa fila (no compara filas entre sí).
   </small></p>
 {% endblock %}
