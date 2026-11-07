@@ -10,5 +10,6 @@ urlpatterns = [
     path("comparar/", views.comparar, name="comparar"),
     path("comparar/ia/", views.comparar_ia, name="comparar_ia"),
     path("metodologia/", views.metodologia, name="metodologia"),
+    path("calidad/", views.calidad, name="calidad"),
     path("admin/", admin.site.urls),
 ]

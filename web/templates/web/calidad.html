@@ -1,0 +1,31 @@
+{% extends "web/base.html" %}
+
+{% block titulo %}Calidad de datos · AI Financial Analyst{% endblock %}
+
+{% block contenido %}
+  <h1>Calidad de datos</h1>
+  <p>Todos los ratios que salen "—" en esta web y por qué. Nunca se estima un dato que falta: se deja vacío y se explica aquí.
+     (El crecimiento del primer año de cada empresa no aparece: nunca tiene año anterior con el que comparar.)</p>
+
+  {% if filas %}
+    <div class="tabla">
+      <table>
+        <thead><tr><th>Empresa</th><th>Ratio</th><th>Ejercicios</th><th>Motivo</th></tr></thead>
+        <tbody>
+          {% for f in filas %}
+            <tr>
+              <th><a href="{% url 'empresa' f.symbol %}">{{ f.symbol }}</a></th>
+              <td class="formula">{{ f.ratio }}</td>
+              <td>{{ f.años }}</td>
+              <td class="formula">{{ f.motivo }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>No hay ningún ratio vacío (o todavía no hay datos: ejecuta <code>python main.py</code>).</p>
+  {% endif %}
+
+  <p><a href="{% url 'metodologia' %}">← Metodología</a></p>
+{% endblock %}

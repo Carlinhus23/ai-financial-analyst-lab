@@ -34,7 +34,7 @@
 
   <h2>Decisiones</h2>
   <ul>
-    <li><strong>"—" significa "no calculable".</strong> Sale cuando falta un dato en la fuente o cuando el ratio no tendría sentido (dividir entre 0, patrimonio o beneficio negativos). Nunca se estima un dato que falta.</li>
+    <li><strong>"—" significa "no calculable".</strong> Sale cuando falta un dato en la fuente o cuando el ratio no tendría sentido (dividir entre 0, patrimonio o beneficio negativos). Nunca se estima un dato que falta. Lista completa de los "—" y su motivo: <a href="{% url 'calidad' %}">Calidad de datos</a>.</li>
     <li><strong>Deuda = deuda financiera</strong> (préstamos y bonos, a largo y corto plazo), sin arrendamientos operativos.</li>
     <li><strong>Sin umbrales de "alto" o "bajo".</strong> Si un ratio es bueno o malo depende del sector, así que no se colorea ni se califica. Para comparar, está la mediana de cada sector en <a href="{% url 'comparar' %}">Comparar</a>. Solo se colorean las variaciones (verde si suben, rojo si bajan).</li>
     <li><strong>La IA no calcula.</strong> Gemini solo recibe la ficha con las cifras ya calculadas y las explica. Después, un verificador comprueba que cada número de su explicación esté en la ficha, y avisa si no.</li>

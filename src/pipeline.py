@@ -23,6 +23,7 @@ from src.database.duckdb_manager import (
     obtener_estado,
     obtener_explicacion,
 )
+from src.financial.calidad import ratios_sin_dato
 from src.financial.ratios import (
     NOMBRES_RATIOS,
     calcular_crecimiento,
@@ -175,3 +176,8 @@ def _explicar_con_memoria(clave, ficha, instrucciones, ruta_db, nueva=False):
 def listar_empresas(ruta_db=RUTA_DB):
     # Empresas que ya tienen datos guardados. No llama a la API.
     return obtener_empresas(ruta_db)
+
+
+def obtener_calidad(ruta_db=RUTA_DB):
+    # Qué ratios salen "—" en cada empresa y por qué. No llama a la API.
+    return ratios_sin_dato(obtener_ratios(None, ruta_db))

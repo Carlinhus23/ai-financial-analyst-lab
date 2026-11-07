@@ -465,3 +465,24 @@ def test_pedir_otra_explicacion_ignora_la_guardada(client, db_con_aapl, monkeypa
 
     assert pedidas == [False, True]
     assert 'href="?explicar=nueva"' in texto  # el botón sale bajo la explicación
+
+
+def test_calidad_lista_los_vacios_con_su_motivo(client, db_con_aapl, monkeypatch):
+    monkeypatch.setattr(
+        views,
+        "obtener_calidad",
+        lambda r: [
+            {
+                "symbol": "AAPL",
+                "ratio": "Margen bruto",
+                "motivo": "Falta en la SEC: beneficio bruto",
+                "años": "2025",
+            }
+        ],
+    )
+
+    texto = client.get("/calidad/").text
+
+    assert "Falta en la SEC: beneficio bruto" in texto
+    assert "/empresa/AAPL/" in texto
+    assert "/calidad/" in client.get("/metodologia/").text  # enlace desde Metodología

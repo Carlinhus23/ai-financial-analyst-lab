@@ -16,6 +16,7 @@ from src.pipeline import (
     comparar_empresas,
     explicar_empresa,
     listar_empresas,
+    obtener_calidad,
     obtener_comparacion,
     obtener_perfil,
     obtener_ratios,
@@ -329,3 +330,9 @@ def comparar_ia(request):
         "dudosas": dudosas,
     }
     return render(request, "web/comparar_ia.html", contexto)
+
+
+def calidad(request):
+    # Lista de todos los "—" de la web y su motivo (lo calcula src/).
+    filas = obtener_calidad(_ruta_db()) if _empresas_disponibles() else []
+    return render(request, "web/calidad.html", {"filas": filas})
