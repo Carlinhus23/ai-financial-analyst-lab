@@ -343,3 +343,10 @@ def test_solo_las_variaciones_llevan_color(client, db_con_aapl):
 
     assert '<span class="baja">-0,15 %</span>' in texto  # variación del día
     assert "<td>25,0 %</td>" in texto  # deuda / activos: sin color
+
+
+def test_comparar_usa_la_tabla_con_cabecera_y_columna_fijas(client, db_con_aapl):
+    texto = client.get("/comparar/").text
+
+    assert '<div class="tabla tabla-fija">' in texto
+    assert '<tr id="AAPL">' in texto  # /comparar/#AAPL lleva a su fila

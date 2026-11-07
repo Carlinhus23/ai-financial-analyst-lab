@@ -8,6 +8,13 @@
   <style>
     td { text-align: right; font-variant-numeric: tabular-nums; }
     .tabla { overflow-x: auto; }
+    /* Comparar: la tabla tiene su propia zona de desplazamiento y, al moverse
+       por ella, la fila de títulos (arriba) y la columna de empresas (a la
+       izquierda) se quedan fijas. El fondo tapa lo que pasa por debajo. */
+    .tabla-fija { max-height: 75vh; }
+    .tabla-fija thead th { position: sticky; top: 0; z-index: 1; background: var(--pico-background-color); white-space: nowrap; box-shadow: inset 0 -2px var(--pico-muted-border-color); }
+    .tabla-fija tbody th { position: sticky; left: 0; background: var(--pico-background-color); }
+    .tabla-fija thead th:first-child { left: 0; z-index: 2; }
     /* Solo para variaciones (sesión, crecimiento): verde si sube, rojo si baja.
        Son los colores de Pico, así que también valen en modo oscuro. */
     .sube { color: var(--pico-ins-color); }

@@ -7,7 +7,7 @@
   {% if filas %}
     <p>Último ejercicio fiscal de cada empresa, ordenadas por sector: compara mejor dentro del mismo sector.</p>
 
-    <div class="tabla">
+    <div class="tabla tabla-fija">
       <table>
         <thead>
           <tr>
@@ -29,7 +29,7 @@
                 {% for valor in fila.valores %}<td><em>{{ valor }}</em></td>{% endfor %}
               </tr>
             {% else %}
-              <tr>
+              <tr id="{{ fila.symbol }}">
                 <th><a href="{% url 'empresa' fila.symbol %}">{{ fila.symbol }}</a></th>
                 <td>{{ fila.sector }}</td>
                 <td>{{ fila.ejercicio }}</td>
