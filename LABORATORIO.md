@@ -116,8 +116,13 @@ I8. Navegación: página actual marcada y selector rápido de empresa.
   `COLUMNAS_CON_SIGNO`) · `765ba58` · 2/5 (07-11-2026). Depende de 2, 11, 12, 14.
 - I6 · Cabecera y columna fijas en Comparar (guía: mejora 16, `.tabla-fija`)
   · `50ce03d` · 2/5 (07-11-2026).
+- I7 · Indicador de espera en el botón de IA (guía: mejora 17, primer
+  JavaScript: un onclick con aria-busy) · `518c5df` · 2/5 (07-11-2026).
 
-Loop cada 3 min (Carlos, 07-11-2026), prioridad a la interfaz. Siguiente: I7.
+Loop cada 3 min (Carlos, 07-11-2026), prioridad a la interfaz.
+Siguiente: I4b (ARREGLO, va primero): en `.cifras strong` poner
+`white-space: nowrap` (con 1000 px "411.563 M USD" se parte en dos líneas);
+mirarlo con captura a 1000 px. Después I8.
 Para probar algo que solo se ve al desplazarse: copiar la página con curl al
 scratchpad, añadir un <script> que haga scrollTop/scrollLeft, y capturar con
 --virtual-time-budget=3000 (las anclas #X en Edge sin ventana no son fiables).
@@ -128,8 +133,8 @@ plantillas) y captura con Edge sin ventana:
 Web del lab para Carlos: `runserver 8001 --noreload` en segundo plano (el
 recargador automático no detectó cambios): reiniciarla tras cada mejora.
 
-Guía: tabla de mejoras `mrvek3gz8sk.48230` (cambia de id si se reescribe).
+Guía: tabla de mejoras `mrvek3gz8sk.51716` (cambia de id si se reescribe).
 Ejemplos con cifras en la guía: sacarlas SIEMPRE de los datos reales.
 Para añadir una fila, LEER antes la tabla (`view` + `parentId`): si Carlos ha
 cambiado alguna Decisión, conservarla (mismo `index` en su dropdown). Secciones
-`### N.` al final de la pestaña (insert en root, end). Última rev: 23.
+`### N.` al final de la pestaña (insert en root, end). Última rev: 25.
