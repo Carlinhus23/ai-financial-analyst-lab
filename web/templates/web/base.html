@@ -8,6 +8,9 @@
   <style>
     td { text-align: right; font-variant-numeric: tabular-nums; }
     .tabla { overflow-x: auto; }
+    /* Selector del menú: compacto, a la altura de los enlaces. */
+    nav select { margin: 0; padding-block: 0.35rem; width: auto; }
+    nav a[aria-current="page"] { font-weight: bold; text-decoration: underline; }
     /* Comparar: la tabla tiene su propia zona de desplazamiento y, al moverse
        por ella, la fila de títulos (arriba) y la columna de empresas (a la
        izquierda) se quedan fijas. El fondo tapa lo que pasa por debajo. */
@@ -41,7 +44,21 @@
   <header>
     <nav>
       <ul><li><a href="{% url 'inicio' %}"><strong>AI Financial Analyst</strong></a></li></ul>
-      <ul><li><a href="{% url 'comparar' %}">Comparar</a></li></ul>
+      <ul>
+        {# aria-current marca la página en la que estás (Pico la resalta). #}
+        <li><a href="{% url 'comparar' %}"{% if request.resolver_match.url_name == "comparar" %} aria-current="page"{% endif %}>Comparar</a></li>
+        {% if empresas_menu %}
+          <li>
+            {# Al elegir una empresa, el navegador va a su página. #}
+            <select aria-label="Ir a una empresa" onchange="if (this.value) location.href = this.value;">
+              <option value="">Ir a empresa…</option>
+              {% for s in empresas_menu %}
+                <option value="{% url 'empresa' s %}"{% if s == symbol %} selected{% endif %}>{{ s }}</option>
+              {% endfor %}
+            </select>
+          </li>
+        {% endif %}
+      </ul>
     </nav>
   </header>
   <main>

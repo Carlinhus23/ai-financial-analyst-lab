@@ -272,6 +272,7 @@ def test_comparar_ordena_de_mayor_a_menor_con_los_vacios_al_final(
     _empresas_falsas(monkeypatch, {"AAPL": 20.0, "NVDA": float("nan"), "MSFT": 30.0})
 
     texto = client.get("/comparar/?orden=per").text
+    texto = texto[texto.index('<div class="tabla') :]  # solo la tabla, sin el menú
 
     posiciones = [texto.index(f"/empresa/{s}/") for s in ["MSFT", "AAPL", "NVDA"]]
     assert posiciones == sorted(posiciones)
@@ -285,9 +286,8 @@ def test_comparar_ignora_un_orden_desconocido(client, db_con_aapl, monkeypatch):
     respuesta = client.get("/comparar/?orden=no_existe")
 
     assert respuesta.status_code == 200
-    assert respuesta.text.index("/empresa/AAPL/") < respuesta.text.index(
-        "/empresa/MSFT/"
-    )
+    tabla = respuesta.text[respuesta.text.index('<div class="tabla') :]
+    assert tabla.index("/empresa/AAPL/") < tabla.index("/empresa/MSFT/")
     assert "▼" not in respuesta.text
 
 
@@ -359,3 +359,23 @@ def test_el_boton_de_ia_muestra_que_esta_esperando(client, db_con_aapl):
     boton = boton[: boton.index("</a>")]
     assert "aria-busy" in boton  # Pico pinta el círculo de espera
     assert "La IA está escribiendo" in boton
+
+
+def test_el_menu_marca_la_pagina_actual(client, db_con_aapl):
+    marcado = 'aria-current="page">Comparar</a>'  # el atributo en el enlace
+
+    assert marcado in client.get("/comparar/").text
+    assert marcado not in client.get("/").text
+
+
+def test_el_selector_del_menu_lista_las_empresas_y_marca_la_actual(client, db_con_aapl):
+    texto = client.get("/empresa/AAPL/").text
+
+    assert '<select aria-label="Ir a una empresa"' in texto
+    assert '<option value="/empresa/AAPL/" selected>AAPL</option>' in texto
+
+
+def test_sin_base_de_datos_no_hay_selector(client, tmp_path, settings):
+    settings.RUTA_DUCKDB = tmp_path / "no_existe.duckdb"
+
+    assert "Ir a una empresa" not in client.get("/").text
